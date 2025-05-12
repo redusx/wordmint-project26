@@ -1,11 +1,11 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
-
-import java.util.Properties
-import java.io.FileInputStream
 
 android {
     namespace = "com.example.wordstore"
@@ -57,6 +57,23 @@ android {
 
 dependencies {
 
+    // Retrofit & Moshi
+    implementation("com.squareup.retrofit2:retrofit:2.9.0") // Retrofit ana kütüphane
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0") // Moshi dönüştürücü
+    implementation("com.squareup.moshi:moshi-kotlin:1.14.0") // Moshi Kotlin desteği
+    // implementation("com.squareup.moshi:moshi:1.14.0") // Eğer sadece moshi kullanacaksanız
+
+    // OkHttp Logging Interceptor (İstekleri ve yanıtları loglamak için - isteğe bağlı ama çok faydalı)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+    // Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") // Android için Coroutines
+
+    // ViewModel ve LiveData (UI ile veri yönetimi için)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.9.0")
+    implementation("androidx.activity:activity-ktx:1.10.1") // activityViewModels kullanımı için
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -89,7 +106,9 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.runtime.livedata)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
