@@ -6,5 +6,14 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class TranslationRequest(
     @Json(name = "inputs")
-    val inputs: String
+    val inputs: String,
+    
+    @Json(name = "parameters")
+    val parameters: TranslationParameters? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class TranslationParameters(
+    @Json(name = "tgt_lang")
+    val targetLanguage: String
 ) 
