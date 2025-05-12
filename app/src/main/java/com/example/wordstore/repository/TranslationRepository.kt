@@ -11,22 +11,16 @@ import kotlinx.coroutines.withContext
 class TranslationRepository {
     private val apiService = ApiClient.huggingFaceApiService
     
-    // Target language code for Turkish
-    private val TARGET_LANGUAGE = "tr"
-    
     suspend fun translateText(text: String): ResultWrapper<List<TranslationResponse>> {
         return withContext(Dispatchers.IO) {
             try {
                 val authHeader = ApiClient.getAuthHeader()
                 
-                // Add the language prefix to the input text (required by Helsinki-NLP models)
-                val prefixedText = ">>$TARGET_LANGUAGE<< $text"
-                
-                // Create request with both prefixed text and parameters
-                val parameters = TranslationParameters(targetLanguage = TARGET_LANGUAGE)
+                // Using opus-mt-tc-big-en-tr model which is dedicated for English to Turkish
+                // This model doesn't require language tokens like >>tr<< 
+                // It's a specialized model specifically for English to Turkish
                 val request = TranslationRequest(
-                    inputs = prefixedText,
-                    parameters = parameters
+                    inputs = text
                 )
                 
                 val response = apiService.translate(authHeader, request)

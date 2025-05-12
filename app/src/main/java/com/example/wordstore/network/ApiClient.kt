@@ -10,7 +10,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private const val BASE_URL = "https://router.huggingface.co/hf-inference/models/Helsinki-NLP/opus-mt-en-mul"
+    private const val BASE_URL = "https://router.huggingface.co/hf-inference/models/Helsinki-NLP/opus-mt-tc-big-en-tr/"
     
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
