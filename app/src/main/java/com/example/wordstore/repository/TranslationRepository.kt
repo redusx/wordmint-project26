@@ -14,10 +14,8 @@ class TranslationRepository {
         return withContext(Dispatchers.IO) {
             try {
                 val authHeader = ApiClient.getAuthHeader()
-                // Prepend the translation prefix for English to Turkish
-                val translationPrefix = "translate English to Turkish: "
-                val formattedText = translationPrefix + text
-                val request = TranslationRequest(inputs = formattedText)
+                // Use the raw text directly without any prefix
+                val request = TranslationRequest(inputs = text)
                 val response = apiService.translate(authHeader, request)
                 
                 if (response.isSuccessful) {
