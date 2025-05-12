@@ -1,47 +1,62 @@
 package com.example.wordstore
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.wordstore.ui.theme.WordStoreTheme
+import android.view.View
+import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import com.example.wordstore.data.ResultWrapper
+import com.example.wordstore.databinding.ActivityMainBinding
+import com.example.wordstore.viewmodel.TranslationViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    
+    private lateinit var binding: ActivityMainBinding
+    private val viewModel: TranslationViewModel by viewModels()
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            WordStoreTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        setupListeners()
+        observeViewModel()
+    }
+    
+    private fun setupListeners() {
+        binding.buttonTranslate.setOnClickListener {
+            val inputText = binding.editTextInput.text.toString().trim()
+            if (inputText.isNotEmpty()) {
+                viewModel.translateText(inputText)
+            } else {
+                Toast.makeText(this, "Please enter text to translate", Toast.LENGTH_SHORT).show()
             }
         }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WordStoreTheme {
-        Greeting("Android")
+    
+    private fun observeViewModel() {
+        viewModel.translationResult.observe(this) { result ->
+            when (result) {
+                is ResultWrapper.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.buttonTranslate.isEnabled = false
+                }
+                is ResultWrapper.Success -> {
+                    binding.progressBar.visibility = View.GONE
+                    binding.buttonTranslate.isEnabled = true
+                    
+                    val translatedText = result.data.firstOrNull()?.translationText ?: ""
+                    binding.textViewResult.text = translatedText
+                }
+                is ResultWrapper.Error -> {
+                    binding.progressBar.visibility = View.GONE
+                    binding.buttonTranslate.isEnabled = true
+                    
+                    val errorMessage = result.message
+                    binding.textViewResult.text = "Error: $errorMessage"
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 }
