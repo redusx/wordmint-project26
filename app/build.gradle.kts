@@ -91,6 +91,9 @@ dependencies {
     
     // Retrofit with OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    //--Gson
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    //--
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
@@ -108,6 +111,23 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.runtime.livedata)
+
+    //Jsoup
+    implementation("org.jsoup:jsoup:1.17.2")
+
+    // Jetpack Compose
+    implementation(platform("androidx.compose:compose-bom:2024.05.00")) // BOM en son sürüm
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3") // Material 3
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Activity Compose
+    implementation("androidx.activity:activity-compose:1.9.0") // En son sürümü kontrol edin
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
