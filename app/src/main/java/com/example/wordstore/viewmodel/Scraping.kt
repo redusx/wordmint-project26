@@ -56,7 +56,11 @@ suspend fun fetchCambridgeTranslation(word: String): FetchState {
                 // .sense-body dsense_b -> Bu her bir anlam için bir blok
                 // Bazen .def-block.ddef_block içinde de direkt çeviriler olabilir.
                 // Bu selector'leri birleştirebiliriz: entryElement.select(".sense-body.dsense_b, .def-block.ddef_block")
-                val senseBlocks = entryElement.select(".sense-body.dsense_b, div.def-block.ddef_block")
+                // DÜZELTME: Hem sense-body hem de def-block seçildiğinde, eğer def-block sense-body içindeyse
+                // aynı içerik iki kez işleniyor (bir kez parent, bir kez child olarak).
+                // Bu yüzden sadece en içteki anlam bloğu olan .def-block.ddef_block'u seçiyoruz.
+                // Eğer hiç blok bulunamazsa aşağıdaki if (senseBlocks.isEmpty()) bloğu devreye girip genel aramayı yapacak.
+                val senseBlocks = entryElement.select("div.def-block.ddef_block")
 
                 if (senseBlocks.isEmpty()) { // Eğer bu POS için anlam bloğu yoksa, doğrudan entryElement içindeki çevirilere bak
                     val directTranslations = entryElement.select("span.trans.dtrans.dtrans-se, span.trans.dtrans")
