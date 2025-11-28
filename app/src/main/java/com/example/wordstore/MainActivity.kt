@@ -28,93 +28,51 @@ import com.example.wordstore.data.FetchState
 import com.example.wordstore.data.TranslationResult
 import com.example.wordstore.data.WordEntry
 import com.example.wordstore.ui.theme.WordStoreTheme
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.wordstore.ui.HomeScreen
+import com.example.wordstore.ui.AddWordScreen
+import com.example.wordstore.viewmodel.WordViewModel
+import com.example.wordstore.viewmodel.WordViewModelFactory
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val viewModel: TranslationViewModel by viewModels()
+    private val translationViewModel: TranslationViewModel by viewModels()
+    private val wordViewModel: WordViewModel by viewModels {
+        WordViewModelFactory((application as WordStoreApplication).repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WordStoreTheme { // Projenizin tema adını kullanın
-                MainScreen(viewModel = viewModel)
+            WordStoreTheme {
+                MainScreen(
+                    wordViewModel = wordViewModel,
+                    translationViewModel = translationViewModel
+                )
             }
         }
-
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun MainScreen(viewModel: TranslationViewModel) {
-        // TextField için state
-        var wordInput by remember { mutableStateOf("") }
-        // ViewModel'den LiveData'yı observe et
-        val fetchState by viewModel.translationState.observeAsState()
+    fun MainScreen(
+        wordViewModel: WordViewModel,
+        translationViewModel: TranslationViewModel
+    ) {
+        val navController = rememberNavController()
 
-        Scaffold(
-            topBar = {
-                TopAppBar(title = { Text("Cambridge Dictionary Translator") })
+        NavHost(navController = navController, startDestination = "home") {
+            composable("home") {
+                HomeScreen(navController = navController, wordViewModel = wordViewModel)
             }
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                OutlinedTextField(
-                    value = wordInput,
-                    onValueChange = { wordInput = it },
-                    label = { Text("Enter word") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+            composable("add_word") {
+                AddWordScreen(
+                    navController = navController,
+                    wordViewModel = wordViewModel,
+                    translationViewModel = translationViewModel
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = {
-                        if (wordInput.isNotBlank()) {
-                            viewModel.getTranslation(wordInput)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Translate")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Sonuçları göster
-                when (val state = fetchState) {
-                    is FetchState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                    }
-                    is FetchState.Success -> {
-                        TranslationResultView(result = state.result)
-                    }
-                    is FetchState.Error -> {
-                        Text(
-                            "Error: ${state.message}",
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
-                    is FetchState.WordNotFound -> {
-                        Text(
-                            "Word not found or no translations available.",
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
-                    null -> { // Henüz bir arama yapılmadı
-                        Text(
-                            "Enter a word and press 'Translate'.",
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
-                }
             }
         }
     }

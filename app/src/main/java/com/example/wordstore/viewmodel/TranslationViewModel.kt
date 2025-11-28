@@ -23,4 +23,7 @@ class TranslationViewModel : ViewModel() {
             _translationState.postValue(result)
         }
     }
+    fun resetState() {
+        _translationState.value = null
+    }
 } 
