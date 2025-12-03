@@ -114,7 +114,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
 
     //Jsoup
-    implementation("org.jsoup:jsoup:1.17.2")
+
 
     // Jetpack Compose
     implementation(platform("androidx.compose:compose-bom:2024.05.00")) // BOM en son sürüm

@@ -3,7 +3,6 @@ package com.example.wordstore.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
-import androidx.room.TypeConverters
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -11,37 +10,40 @@ import com.google.gson.reflect.TypeToken
 data class Word(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val english: String,
-    val turkish: String,
-    val definitions: List<Definition> = emptyList(), // Store full definitions if needed
-    val examples: List<ExamplePair> = emptyList() // Store examples if needed
+    val turkish: String, // User can still manually enter this
+    val sourceLang: String = "en",
+    val meanings: List<MeaningDto> = emptyList(),
+    val translatedDefinitions: List<TranslatedDefinition> = emptyList(),
+    val phonetic: String? = null,
+    val audioUrl: String? = null
 )
 
 class Converters {
     @TypeConverter
-    fun fromDefinitionList(value: List<Definition>?): String {
+    fun fromMeaningList(value: List<MeaningDto>?): String {
         val gson = Gson()
-        val type = object : TypeToken<List<Definition>>() {}.type
+        val type = object : TypeToken<List<MeaningDto>>() {}.type
         return gson.toJson(value, type)
     }
 
     @TypeConverter
-    fun toDefinitionList(value: String): List<Definition> {
+    fun toMeaningList(value: String): List<MeaningDto> {
         val gson = Gson()
-        val type = object : TypeToken<List<Definition>>() {}.type
+        val type = object : TypeToken<List<MeaningDto>>() {}.type
         return gson.fromJson(value, type) ?: emptyList()
     }
 
     @TypeConverter
-    fun fromExampleList(value: List<ExamplePair>?): String {
+    fun fromTranslatedDefinitionList(value: List<TranslatedDefinition>?): String {
         val gson = Gson()
-        val type = object : TypeToken<List<ExamplePair>>() {}.type
+        val type = object : TypeToken<List<TranslatedDefinition>>() {}.type
         return gson.toJson(value, type)
     }
 
     @TypeConverter
-    fun toExampleList(value: String): List<ExamplePair> {
+    fun toTranslatedDefinitionList(value: String): List<TranslatedDefinition> {
         val gson = Gson()
-        val type = object : TypeToken<List<ExamplePair>>() {}.type
+        val type = object : TypeToken<List<TranslatedDefinition>>() {}.type
         return gson.fromJson(value, type) ?: emptyList()
     }
 }

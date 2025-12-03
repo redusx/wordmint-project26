@@ -15,11 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.wordstore.data.Definition
-import com.example.wordstore.data.ExamplePair
+import com.example.wordstore.data.MeaningDto
 import com.example.wordstore.data.Word
 import com.example.wordstore.viewmodel.WordViewModel
 
@@ -95,14 +93,17 @@ fun WordCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                val title = if (word.sourceLang == "tr") word.turkish else word.english
+                val subtitle = if (word.sourceLang == "tr") word.english else word.turkish
+                
                 Text(
-                    text = word.english.replaceFirstChar { it.uppercase() },
+                    text = title.replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = word.turkish,
+                    text = subtitle,
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1
                 )
@@ -130,28 +131,81 @@ fun WordDetailDialog(word: Word, onDismiss: () -> Unit) {
                 .fillMaxHeight(0.8f) // Occupy 80% of screen height
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                val title = if (word.sourceLang == "tr") word.turkish else word.english
+                val subtitle = if (word.sourceLang == "tr") word.english else word.turkish
+                val subtitleLabel = if (word.sourceLang == "tr") "EN" else "TR"
+
                 Text(
-                    text = word.english.replaceFirstChar { it.uppercase() },
+                    text = title.replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 
+                Text(
+                    text = "$subtitleLabel: $subtitle",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                if (!word.phonetic.isNullOrBlank()) {
+                    Text(
+                        text = "Phonetic: ${word.phonetic}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                
                 Divider()
                 
                 LazyColumn(modifier = Modifier.weight(1f).padding(top = 8.dp)) {
-                    if (word.definitions.isNotEmpty()) {
-                        items(word.definitions) { definition ->
-                            DefinitionView(definition = definition)
+                    if (word.translatedDefinitions.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Definitions (Translated):",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+                        items(word.translatedDefinitions) { def ->
+                            Column {
+                                Text(
+                                    text = "(${def.partOfSpeech})",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "• ${def.primaryDefinition}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Normal
+                                )
+                                Text(
+                                    text = "   (${def.secondaryDefinition})",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 8.dp, top = 2.dp)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Divider(color = MaterialTheme.colorScheme.surfaceVariant)
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                        }
+                    } else if (word.meanings.isNotEmpty()) {
+                        items(word.meanings) { meaning ->
+                            MeaningView(meaning = meaning)
                             Spacer(modifier = Modifier.height(12.dp))
                             Divider(color = MaterialTheme.colorScheme.surfaceVariant)
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                     } else {
-                        // Fallback if no definitions saved (e.g. manual entry without extra details)
+                        // Fallback if no definitions saved
                         item {
                             Text(
-                                text = "Meaning: ${word.turkish}",
+                                text = "No definitions available.",
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -172,43 +226,31 @@ fun WordDetailDialog(word: Word, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun DefinitionView(definition: Definition) {
+fun MeaningView(meaning: MeaningDto) {
     Column {
         Text(
-            text = definition.turkishTranslations.joinToString(", "),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold
-        )
-        if (definition.examples.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Examples:",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
-            )
-            definition.examples.forEach { example ->
-                ExampleView(example = example)
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun ExampleView(example: ExamplePair) {
-    Column(modifier = Modifier.padding(start = 8.dp, top = 2.dp)) {
-        Text(
-            text = "EN: ${example.english}",
-            style = MaterialTheme.typography.bodyMedium,
-            lineHeight = 18.sp
-        )
-        Text(
-            text = "TR: ${example.turkish}",
-            style = MaterialTheme.typography.bodyMedium,
+            text = "(${meaning.partOfSpeech})",
+            style = MaterialTheme.typography.titleMedium,
             fontStyle = FontStyle.Italic,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            lineHeight = 18.sp
+            color = MaterialTheme.colorScheme.primary
         )
+        Spacer(modifier = Modifier.height(4.dp))
+        meaning.definitions.forEachIndexed { index, def ->
+            Text(
+                text = "${index + 1}. ${def.definition}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Normal
+            )
+            if (!def.example.isNullOrBlank()) {
+                Text(
+                    text = "Ex: ${def.example}",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 8.dp, top = 2.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
     }
 }
