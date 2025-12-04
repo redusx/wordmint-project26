@@ -5,5 +5,6 @@ data class WordSearchResult(
     val englishWord: String,
     val turkishTranslation: String?,
     val definitions: List<DictionaryEntry>?,
-    val translatedDefinitions: List<TranslatedDefinition>? = null
+    val translatedDefinitions: List<TranslatedDefinition>? = null,
+    val errorMessage: String? = null
 )

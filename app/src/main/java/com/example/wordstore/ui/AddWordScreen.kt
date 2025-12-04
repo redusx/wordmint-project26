@@ -1,21 +1,29 @@
 package com.example.wordstore.ui
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.wordstore.data.MeaningDto
 import com.example.wordstore.data.NetworkResult
 import com.example.wordstore.data.Word
 import com.example.wordstore.viewmodel.DictionaryViewModel
+import com.example.wordstore.viewmodel.DownloadState
+import com.example.wordstore.viewmodel.LanguageModelStatus
 import com.example.wordstore.viewmodel.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,23 +40,81 @@ fun AddWordScreen(
     var targetLang by remember { mutableStateOf("tr") }
     
     val searchResult by dictionaryViewModel.searchResult.observeAsState()
+    val languageStatus by dictionaryViewModel.languageStatus.observeAsState(initial = emptyList())
+    val downloadState by dictionaryViewModel.downloadState.observeAsState()
+    val downloadProgress by dictionaryViewModel.downloadProgress.observeAsState(0)
+
+    // Mobile data permission dialog state
+    var showDataPermissionDialog by remember { mutableStateOf(false) }
+    var pendingDownloadLangCode by remember { mutableStateOf<String?>(null) }
+    
+    val context = LocalContext.current
 
     // Reset state when entering
     LaunchedEffect(Unit) {
         dictionaryViewModel.resetState()
+        dictionaryViewModel.checkLanguageStatus()
+    }
+    
+    // Show download error as snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(downloadState) {
+        when (val state = downloadState) {
+            is DownloadState.Error -> {
+                snackbarHostState.showSnackbar(state.message)
+            }
+            is DownloadState.Success -> {
+                snackbarHostState.showSnackbar("${state.langCode.uppercase()} dil paketi indirildi")
+            }
+            else -> {}
+        }
+    }
+
+    // Data permission dialog
+    if (showDataPermissionDialog && pendingDownloadLangCode != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                showDataPermissionDialog = false
+                pendingDownloadLangCode = null
+            },
+            title = { Text("Mobil Veri Kullanımı") },
+            text = { 
+                Text("Dil paketi indirmek için mobil veri kullanılacak. Devam etmek istiyor musunuz?")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingDownloadLangCode?.let { code ->
+                        dictionaryViewModel.downloadLanguage(code, allowCellular = true)
+                    }
+                    showDataPermissionDialog = false
+                    pendingDownloadLangCode = null
+                }) {
+                    Text("İndir")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDataPermissionDialog = false
+                    pendingDownloadLangCode = null
+                }) {
+                    Text("İptal")
+                }
+            }
+        )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add New Word") },
+                title = { Text("Yeni Kelime Ekle") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -66,11 +132,27 @@ fun AddWordScreen(
                 OutlinedTextField(
                     value = inputWord,
                     onValueChange = { inputWord = it },
-                    label = { Text("Input Word") },
+                    label = { Text("Kelime Girin") },
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                LanguageSelector(selectedLang = sourceLang, onLangSelected = { sourceLang = it })
+                LanguageSelector(
+                    selectedLang = sourceLang, 
+                    onLangSelected = { sourceLang = it },
+                    languageStatus = languageStatus,
+                    onDownload = { langCode ->
+                        // Check if on WiFi
+                        if (isOnWiFi(context)) {
+                            dictionaryViewModel.downloadLanguage(langCode, allowCellular = false)
+                        } else {
+                            // Ask permission for mobile data
+                            pendingDownloadLangCode = langCode
+                            showDataPermissionDialog = true
+                        }
+                    },
+                    downloadState = downloadState,
+                    downloadProgress = downloadProgress
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -83,11 +165,25 @@ fun AddWordScreen(
                 OutlinedTextField(
                     value = outputWord,
                     onValueChange = { outputWord = it },
-                    label = { Text("Output / Translation") },
+                    label = { Text("Çeviri") },
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                LanguageSelector(selectedLang = targetLang, onLangSelected = { targetLang = it })
+                LanguageSelector(
+                    selectedLang = targetLang, 
+                    onLangSelected = { targetLang = it },
+                    languageStatus = languageStatus,
+                    onDownload = { langCode ->
+                        if (isOnWiFi(context)) {
+                            dictionaryViewModel.downloadLanguage(langCode, allowCellular = false)
+                        } else {
+                            pendingDownloadLangCode = langCode
+                            showDataPermissionDialog = true
+                        }
+                    },
+                    downloadState = downloadState,
+                    downloadProgress = downloadProgress
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -102,7 +198,7 @@ fun AddWordScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = inputWord.isNotBlank()
             ) {
-                Text("Translate")
+                Text("Çevir")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -113,14 +209,45 @@ fun AddWordScreen(
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
                 is NetworkResult.Error -> {
-                    Text(
-                        text = result.message ?: "Unknown Error",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = result.message ?: "Bilinmeyen hata",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
                 is NetworkResult.Success -> {
                     val data = result.data
                     if (data != null) {
+                        // Show translation error if any
+                        if (!data.errorMessage.isNullOrBlank()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            ) {
+                                Text(
+                                    text = "⚠️ ${data.errorMessage}",
+                                    modifier = Modifier.padding(12.dp),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        
                         // Auto-fill output if empty or matching result
                         LaunchedEffect(data) {
                             if (sourceLang == "en" && targetLang == "tr") {
@@ -136,7 +263,7 @@ fun AddWordScreen(
 
                         if (!data.translatedDefinitions.isNullOrEmpty()) {
                              Text(
-                                text = "Definitions (Translated):",
+                                text = "Tanımlar:",
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.align(Alignment.Start)
                             )
@@ -160,7 +287,7 @@ fun AddWordScreen(
                             }
                         } else if (!data.definitions.isNullOrEmpty()) {
                             Text(
-                                text = "Definitions for: ${data.englishWord}",
+                                text = "Tanımlar: ${data.englishWord}",
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.align(Alignment.Start)
                             )
@@ -226,7 +353,6 @@ fun AddWordScreen(
                             finalEnglish = inputWord.trim()
                             finalTurkish = outputWord.trim()
                         } else {
-                            // Assuming TR input
                             finalEnglish = outputWord.trim()
                             finalTurkish = inputWord.trim()
                         }
@@ -247,34 +373,129 @@ fun AddWordScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = inputWord.isNotBlank() && outputWord.isNotBlank()
             ) {
-                Text("Save Word")
+                Text("Kelimeyi Kaydet")
             }
         }
     }
 }
 
 @Composable
-fun LanguageSelector(selectedLang: String, onLangSelected: (String) -> Unit) {
+fun LanguageSelector(
+    selectedLang: String, 
+    onLangSelected: (String) -> Unit,
+    languageStatus: List<LanguageModelStatus>,
+    onDownload: (String) -> Unit,
+    downloadState: DownloadState? = null,
+    downloadProgress: Int = 0
+) {
     var expanded by remember { mutableStateOf(false) }
-    val languages = listOf("en" to "EN", "tr" to "TR")
+    
+    // Sort: Downloaded first, then alphabetically
+    val sortedLanguages = remember(languageStatus) {
+        languageStatus.sortedWith(compareByDescending<LanguageModelStatus> { it.isDownloaded }.thenBy { it.code })
+    }
 
     Box {
         Button(onClick = { expanded = true }) {
-            Text(languages.find { it.first == selectedLang }?.second ?: selectedLang)
+            Text(selectedLang.uppercase())
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = 300.dp)
         ) {
-            languages.forEach { (code, label) ->
+            if (sortedLanguages.isEmpty()) {
                 DropdownMenuItem(
-                    text = { Text(label) },
-                    onClick = {
-                        onLangSelected(code)
-                        expanded = false
-                    }
+                    text = { Text("Diller yükleniyor...") },
+                    onClick = {}
                 )
+            } else {
+                sortedLanguages.forEach { status ->
+                    DropdownMenuItem(
+                        text = { 
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = getLanguageName(status.code),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (status.isDownloaded) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "İndirildi",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    } else {
+                                        // Check if this language is currently downloading
+                                        val isDownloading = downloadState is DownloadState.Downloading && 
+                                                          downloadState.langCode == status.code
+                                        
+                                        if (isDownloading) {
+                                            Column(horizontalAlignment = Alignment.End) {
+                                                Text(
+                                                    text = "%$downloadProgress",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                LinearProgressIndicator(
+                                                    progress = downloadProgress / 100f,
+                                                    modifier = Modifier.width(60.dp).height(4.dp)
+                                                )
+                                            }
+                                        } else {
+                                            TextButton(
+                                                onClick = { 
+                                                    onDownload(status.code)
+                                                    expanded = false
+                                                }
+                                            ) {
+                                                Text("İndir", style = MaterialTheme.typography.labelSmall)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        onClick = {
+                            if (status.isDownloaded) {
+                                onLangSelected(status.code)
+                                expanded = false
+                            }
+                        }
+                    )
+                }
             }
         }
+    }
+}
+
+fun isOnWiFi(context: Context): Boolean {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork ?: return false
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+}
+
+fun getLanguageName(code: String): String {
+    return when (code) {
+        "en" -> "🇬🇧 English"
+        "tr" -> "🇹🇷 Türkçe"
+        "de" -> "🇩🇪 Deutsch"
+        "fr" -> "🇫🇷 Français"
+        "es" -> "🇪🇸 Español"
+        "it" -> "🇮🇹 Italiano"
+        "ru" -> "🇷🇺 Русский"
+        "ar" -> "🇸🇦 العربية"
+        "ja" -> "🇯🇵 日本語"
+        "zh" -> "🇨🇳 中文"
+        else -> code.uppercase()
     }
 }
