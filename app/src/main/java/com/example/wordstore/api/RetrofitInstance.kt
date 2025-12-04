@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    private const val DICTIONARY_BASE_URL = "https://api.dictionaryapi.dev/"
+    private const val DICTIONARY_BASE_URL = "https://freedictionaryapi.com/"
 
 
     val api: DictionaryApi by lazy {

@@ -6,12 +6,16 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
 object TranslationManager {
 
     private var englishToTurkishTranslator: Translator? = null
     private var turkishToEnglishTranslator: Translator? = null
+    
+    // Cache for dynamic translators
+    private val translatorCache = mutableMapOf<String, Translator>()
     
     // Track initialization status
     private var isInitialized = false
@@ -44,6 +48,56 @@ object TranslationManager {
         turkishToEnglishTranslator = Translation.getClient(optionsTrEn)
         
         isInitialized = true
+    }
+
+    /**
+     * Get or create translator for any language pair
+     */
+    private fun getTranslator(sourceLang: String, targetLang: String): Translator {
+        val key = "$sourceLang-$targetLang"
+        return translatorCache.getOrPut(key) {
+            val options = TranslatorOptions.Builder()
+                .setSourceLanguage(sourceLang)
+                .setTargetLanguage(targetLang)
+                .build()
+            Translation.getClient(options)
+        }
+    }
+
+    /**
+     * Generic translation for any language pair
+     */
+    suspend fun translate(text: String, sourceLang: String, targetLang: String): Result<String> {
+        return try {
+            if (!isInitialized) initialize()
+            
+            // Check if models are downloaded
+            val sourceReady = isModelDownloaded(sourceLang)
+            val targetReady = isModelDownloaded(targetLang)
+            
+            if (!sourceReady || !targetReady) {
+                return Result.failure(Exception(
+                    "Dil modelleri hazır değil. Lütfen ${sourceLang.uppercase()} ve ${targetLang.uppercase()} modellerini indirin."
+                ))
+            }
+            
+            val translator = getTranslator(sourceLang, targetLang)
+            val result = translator.translate(text).await()
+            
+            if (result != null) {
+                Result.success(result)
+            } else {
+                Result.failure(Exception("Çeviri yapılamadı."))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            val errorMsg = if (e.message?.contains("model", ignoreCase = true) == true) {
+                "Dil modeli hazır değil. Lütfen ${sourceLang.uppercase()}→${targetLang.uppercase()} modellerini indirin."
+            } else {
+                "Çeviri hatası: ${e.message ?: "Bilinmeyen hata"}"
+            }
+            Result.failure(Exception(errorMsg))
+        }
     }
 
     /**
@@ -80,15 +134,21 @@ object TranslationManager {
                 notificationManager?.showDownloadStarted("EN/TR")
             }
             
-            // Simulate progress (ML Kit doesn't provide real progress)
-            onProgressUpdate?.invoke("en", 25)
+            // Progress updates with delays for visibility
+            onProgressUpdate?.invoke("en", 0)
+            delay(200)
+            
+            onProgressUpdate?.invoke("en", 30)
             englishToTurkishTranslator?.downloadModelIfNeeded(conditions)?.await()
+            delay(200)
             
-            onProgressUpdate?.invoke("en", 50)
-            onProgressUpdate?.invoke("tr", 50)
+            onProgressUpdate?.invoke("en", 60)
+            onProgressUpdate?.invoke("tr", 30)
+            delay(200)
+            
             turkishToEnglishTranslator?.downloadModelIfNeeded(conditions)?.await()
-            
             onProgressUpdate?.invoke("tr", 100)
+            delay(200)
             
             // Complete notification
             if (showNotification) {
@@ -118,65 +178,11 @@ object TranslationManager {
     }
 
     suspend fun translateEnToTr(text: String): Result<String> {
-        return try {
-            if (!isInitialized) initialize()
-            
-            // Check if model is downloaded
-            val isReady = isModelDownloaded(TranslateLanguage.ENGLISH) && 
-                          isModelDownloaded(TranslateLanguage.TURKISH)
-            
-            if (!isReady) {
-                return Result.failure(Exception(
-                    "Dil modeli hazır değil. Lütfen önce EN/TR modellerini indirin."
-                ))
-            }
-            
-            val result = englishToTurkishTranslator?.translate(text)?.await()
-            if (result != null) {
-                Result.success(result)
-            } else {
-                Result.failure(Exception("Çeviri yapılamadı."))
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            val errorMsg = if (e.message?.contains("model", ignoreCase = true) == true) {
-                "Dil modeli hazır değil. Lütfen Settings'ten modeli indirin."
-            } else {
-                "Çeviri hatası: ${e.message ?: "Bilinmeyen hata"}"
-            }
-            Result.failure(Exception(errorMsg))
-        }
+        return translate(text, TranslateLanguage.ENGLISH, TranslateLanguage.TURKISH)
     }
 
     suspend fun translateTrToEn(text: String): Result<String> {
-        return try {
-            if (!isInitialized) initialize()
-            
-            // Check if model is downloaded
-            val isReady = isModelDownloaded(TranslateLanguage.ENGLISH) && 
-                          isModelDownloaded(TranslateLanguage.TURKISH)
-            
-            if (!isReady) {
-                return Result.failure(Exception(
-                    "Dil modeli hazır değil. Lütfen önce EN/TR modellerini indirin."
-                ))
-            }
-            
-            val result = turkishToEnglishTranslator?.translate(text)?.await()
-            if (result != null) {
-                Result.success(result)
-            } else {
-                Result.failure(Exception("Çeviri yapılamadı."))
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            val errorMsg = if (e.message?.contains("model", ignoreCase = true) == true) {
-                "Dil modeli hazır değil. Lütfen Settings'ten modeli indirin."
-            } else {
-                "Çeviri hatası: ${e.message ?: "Bilinmeyen hata"}"
-            }
-            Result.failure(Exception(errorMsg))
-        }
+        return translate(text, TranslateLanguage.TURKISH, TranslateLanguage.ENGLISH)
     }
 
     fun getLastError(): String? = lastError
@@ -184,6 +190,8 @@ object TranslationManager {
     fun close() {
         englishToTurkishTranslator?.close()
         turkishToEnglishTranslator?.close()
+        translatorCache.values.forEach { it.close() }
+        translatorCache.clear()
         isInitialized = false
     }
 
@@ -217,13 +225,17 @@ object TranslationManager {
                 notificationManager?.showDownloadStarted(langCode)
             }
             
-            // Start progress updates
+            // Progress updates with delays
             onProgressUpdate?.invoke(langCode, 0)
+            delay(300)
+            
+            onProgressUpdate?.invoke(langCode, 30)
+            delay(300)
             
             modelManager.download(model, conditions).await()
             
-            // Complete
             onProgressUpdate?.invoke(langCode, 100)
+            delay(200)
             
             if (showNotification) {
                 notificationManager?.showDownloadComplete(langCode)

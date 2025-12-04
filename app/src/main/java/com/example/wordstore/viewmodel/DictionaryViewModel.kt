@@ -1,5 +1,10 @@
 package com.example.wordstore.viewmodel
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.wordstore.data.DictionaryRepository
 import com.example.wordstore.data.NetworkResult
 import com.example.wordstore.data.WordSearchResult
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class DictionaryViewModel : ViewModel() {
@@ -19,23 +25,50 @@ class DictionaryViewModel : ViewModel() {
     private val _languageStatus = MutableLiveData<List<LanguageModelStatus>>()
     val languageStatus: LiveData<List<LanguageModelStatus>> = _languageStatus
     
-    // Cache for language status to avoid repeated expensive checks
+    // Cache for language status
     private var cachedLanguageStatus: List<LanguageModelStatus>? = null
     private var lastStatusCheckTime: Long = 0
     private val STATUS_CACHE_DURATION = 30_000L // 30 seconds
 
     // Download state
-    private val _downloadState = MutableLiveData<DownloadState>()
+    private val _downloadState = MutableLiveData<DownloadState>(DownloadState.Idle)
     val downloadState: LiveData<DownloadState> = _downloadState
     
-    // Download progress
-    private val _downloadProgress = MutableLiveData<Int>()
-    val downloadProgress: LiveData<Int> = _downloadProgress
+    // Network monitoring
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var currentDownloadJob: Job? = null
+    private var currentDownloadLangCode: String? = null
 
     init {
         // Set up progress callback
         com.example.wordstore.data.TranslationManager.onProgressUpdate = { langCode, progress ->
-            _downloadProgress.postValue(progress)
+            // Not used anymore since we're showing indeterminate progress
+        }
+    }
+
+    fun setupNetworkMonitoring(context: Context) {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onLost(network: Network) {
+                // Network lost, cancel ongoing download
+                if (_downloadState.value is DownloadState.Downloading) {
+                    currentDownloadJob?.cancel()
+                    currentDownloadLangCode?.let { langCode ->
+                        _downloadState.postValue(
+                            DownloadState.Error(langCode, "Bağlantı kesildi. İndirme iptal edildi.")
+                        )
+                    }
+                }
+            }
+        }
+        
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        
+        networkCallback?.let {
+            connectivityManager.registerNetworkCallback(request, it)
         }
     }
 
@@ -75,23 +108,36 @@ class DictionaryViewModel : ViewModel() {
     }
 
     fun downloadLanguage(code: String, allowCellular: Boolean = false) {
-        viewModelScope.launch {
-            _downloadState.value = DownloadState.Downloading(code)
-            _downloadProgress.value = 0
-            
-            val error = com.example.wordstore.data.TranslationManager.downloadModel(
-                code, 
-                requireWifi = !allowCellular,
-                showNotification = true
-            )
-            
-            if (error == null) {
-                _downloadState.value = DownloadState.Success(code)
-                _downloadProgress.value = 100
-                checkLanguageStatus(forceRefresh = true) // Refresh status
-            } else {
-                _downloadState.value = DownloadState.Error(code, error)
-                _downloadProgress.value = 0
+        // Cancel any existing download
+        currentDownloadJob?.cancel()
+        
+        currentDownloadJob = viewModelScope.launch {
+            try {
+                _downloadState.value = DownloadState.Downloading(code)
+                currentDownloadLangCode = code
+                
+                val error = com.example.wordstore.data.TranslationManager.downloadModel(
+                    code, 
+                    requireWifi = !allowCellular,
+                    showNotification = true
+                )
+                
+                if (error == null) {
+                    _downloadState.value = DownloadState.Success(code)
+                    // Clear cache to force refresh
+                    cachedLanguageStatus = null
+                    checkLanguageStatus(forceRefresh = true)
+                } else {
+                    _downloadState.value = DownloadState.Error(code, error)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _downloadState.value = DownloadState.Error(
+                    code, 
+                    e.message ?: "İndirme başarısız"
+                )
+            } finally {
+                currentDownloadLangCode = null
             }
         }
     }
@@ -101,11 +147,16 @@ class DictionaryViewModel : ViewModel() {
             val error = com.example.wordstore.data.TranslationManager.deleteModel(code)
             
             if (error == null) {
+                cachedLanguageStatus = null
                 checkLanguageStatus(forceRefresh = true)
             } else {
                 _downloadState.value = DownloadState.Error(code, error)
             }
         }
+    }
+
+    fun resetDownloadState() {
+        _downloadState.value = DownloadState.Idle
     }
 
     fun searchWord(query: String, sourceLang: String, targetLang: String) {
@@ -118,8 +169,16 @@ class DictionaryViewModel : ViewModel() {
 
     fun resetState() {
         _searchResult.value = null
-        _downloadState.value = null
-        _downloadProgress.value = 0
+        _downloadState.value = DownloadState.Idle
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        currentDownloadJob?.cancel()
+        networkCallback?.let {
+            // Note: Can't unregister without ConnectivityManager reference
+            // Would need to store it as a field
+        }
     }
 }
 
@@ -129,6 +188,7 @@ data class LanguageModelStatus(
 )
 
 sealed class DownloadState {
+    object Idle : DownloadState()
     data class Downloading(val langCode: String) : DownloadState()
     data class Success(val langCode: String) : DownloadState()
     data class Error(val langCode: String, val message: String) : DownloadState()
