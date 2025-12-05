@@ -1,9 +1,9 @@
 package com.example.wordstore
 
 import android.app.Application
-import com.example.wordstore.data.AppDatabase
-import com.example.wordstore.data.TranslationManager
-import com.example.wordstore.data.WordRepository
+import com.example.wordstore.data.local.database.AppDatabase
+import com.example.wordstore.util.TranslationManager
+import com.example.wordstore.data.repository.WordRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

@@ -1,4 +1,4 @@
-package com.example.wordstore.data
+package com.example.wordstore.util
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

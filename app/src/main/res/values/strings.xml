@@ -1,3 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App Identity -->
     <string name="app_name">WordStore</string>
+    <string name="app_tagline">Kelime Öğrenme Asistanı</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Ana Sayfa</string>
+    <string name="nav_add_word">Kelime Ekle</string>
+    <string name="nav_back">Geri</string>
+    <string name="nav_close">Kapat</string>
+    
+    <!-- Home Screen -->
+    <string name="home_empty_title">Henüz kelime yok</string>
+    <string name="home_empty_description">Kelime dağarcığınızı oluşturmaya başlamak için yeni kelimeler ekleyin</string>
+    <string name="home_add_first_word">İlk Kelimeyi Ekle</string>
+    <string name="home_my_words">Kelimelerim</string>
+    <string name="home_total_words">Toplam Kelime</string>
+    <string name="home_learning">Öğrenme</string>
+    <string name="home_active">Aktif</string>
+    
+    <!-- Add Word Screen -->
+    <string name="add_word_title">Yeni Kelime Ekle</string>
+    <string name="add_word_subtitle">Kelime dağarcığınızı genişletin</string>
+    <string name="add_word_source">Kaynak Kelime</string>
+    <string name="add_word_translation">Çeviri</string>
+    <string name="add_word_placeholder">Kelime girin...</string>
+    <string name="add_word_translate">Çevir</string>
+    <string name="add_word_save">Kelimeyi Kaydet</string>
+    <string name="add_word_swap_languages">Dilleri değiştir</string>
+    
+    <!-- Word Detail -->
+    <string name="word_detail_title">Kelime Detayı</string>
+    <string name="word_detail_definitions">Tanımlar</string>
+    <string name="word_detail_meanings">Anlamlar</string>
+    <string name="word_detail_examples">Örnekler</string>
+    <string name="word_detail_phonetic">Telaffuz</string>
+    <string name="word_detail_no_definitions">Tanım bulunamadı</string>
+    
+    <!-- Languages -->
+    <string name="lang_english">English</string>
+    <string name="lang_turkish">Türkçe</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_french">Français</string>
+    <string name="lang_spanish">Español</string>
+    <string name="lang_italian">Italiano</string>
+    <string name="lang_russian">Русский</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_japanese">日本語</string>
+    <string name="lang_chinese">中文</string>
+    <string name="lang_select">Dil seç</string>
+    <string name="lang_loading">Diller yükleniyor...</string>
+    <string name="lang_downloaded">İndirildi</string>
+    <string name="lang_download">İndir</string>
+    
+    <!-- Actions -->
+    <string name="action_delete">Sil</string>
+    <string name="action_edit">Düzenle</string>
+    <string name="action_save">Kaydet</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_confirm">Onayla</string>
+    
+    <!-- Status Messages -->
+    <string name="status_loading">Yükleniyor...</string>
+    <string name="status_translating">Çeviri yapılıyor...</string>
+    <string name="status_success">Başarılı</string>
+    <string name="status_error">Hata</string>
+    <string name="status_no_network">İnternet bağlantısı yok</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_mobile_data_title">Mobil Veri Kullanımı</string>
+    <string name="dialog_mobile_data_message">Dil paketi indirmek için mobil veri kullanılacak. Devam etmek istiyor musunuz?</string>
+    <string name="dialog_download">İndir</string>
+    
+    <!-- Accessibility -->
+    <string name="a11y_add_new_word">Yeni kelime ekle</string>
+    <string name="a11y_delete_word">Kelimeyi sil</string>
+    <string name="a11y_go_back">Geri dön</string>
+    <string name="a11y_close_dialog">Diyaloğu kapat</string>
+    <string name="a11y_translate">Çevir</string>
+    <string name="a11y_save_word">Kelimeyi kaydet</string>
 </resources>

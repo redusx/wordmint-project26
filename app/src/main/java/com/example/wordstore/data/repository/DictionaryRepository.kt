@@ -1,6 +1,15 @@
-package com.example.wordstore.data
+package com.example.wordstore.data.repository
 
-import com.example.wordstore.api.RetrofitInstance
+import com.example.wordstore.data.remote.api.RetrofitInstance
+import com.example.wordstore.data.remote.model.DictionaryEntry
+import com.example.wordstore.data.remote.model.DefinitionDto
+import com.example.wordstore.data.remote.model.MeaningDto
+import com.example.wordstore.data.remote.model.PhoneticDto
+import com.example.wordstore.domain.model.NetworkResult
+import com.example.wordstore.domain.model.TranslatedDefinition
+import com.example.wordstore.domain.model.TranslatedExample
+import com.example.wordstore.domain.model.WordSearchResult
+import com.example.wordstore.util.TranslationManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

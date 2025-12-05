@@ -1,4 +1,6 @@
-package com.example.wordstore.data
+package com.example.wordstore.domain.model
+
+import com.example.wordstore.data.remote.model.DictionaryEntry
 
 data class WordSearchResult(
     val originalQuery: String,

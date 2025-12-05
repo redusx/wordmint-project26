@@ -18,8 +18,8 @@ import com.example.wordstore.ui.theme.WordStoreTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.wordstore.ui.HomeScreen
-import com.example.wordstore.ui.AddWordScreen
+import com.example.wordstore.ui.screens.home.HomeScreen
+import com.example.wordstore.ui.screens.addword.AddWordScreen
 import com.example.wordstore.viewmodel.WordViewModel
 import com.example.wordstore.viewmodel.WordViewModelFactory
 

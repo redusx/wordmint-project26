@@ -1,6 +1,6 @@
-package com.example.wordstore.api
+package com.example.wordstore.data.remote.api
 
-import com.example.wordstore.data.DictionaryResponseV1
+import com.example.wordstore.data.remote.model.DictionaryResponseV1
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path

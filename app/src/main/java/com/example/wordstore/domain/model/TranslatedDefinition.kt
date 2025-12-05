@@ -1,4 +1,4 @@
-package com.example.wordstore.data
+package com.example.wordstore.domain.model
 
 data class TranslatedDefinition(
     val primaryDefinition: String,      // Definition in source language

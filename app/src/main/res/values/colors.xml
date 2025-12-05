@@ -1,10 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Primary Brand Colors -->
+    <color name="primary">#6366F1</color>
+    <color name="primary_dark">#4338CA</color>
+    <color name="primary_light">#A5B4FC</color>
+    <color name="primary_container">#E0E7FF</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary">#10B981</color>
+    <color name="secondary_dark">#047857</color>
+    <color name="secondary_light">#6EE7B7</color>
+    <color name="secondary_container">#D1FAE5</color>
+    
+    <!-- Tertiary/Accent Colors -->
+    <color name="tertiary">#F59E0B</color>
+    <color name="tertiary_dark">#D97706</color>
+    <color name="tertiary_light">#FCD34D</color>
+    <color name="tertiary_container">#FEF3C7</color>
+    
+    <!-- Error Colors -->
+    <color name="error">#E11D48</color>
+    <color name="error_container">#FFE4E6</color>
+    
+    <!-- Background & Surface -->
+    <color name="background">#FAFAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F4F4F5</color>
+    
+    <!-- Text Colors -->
+    <color name="on_surface">#18181B</color>
+    <color name="on_surface_variant">#52525B</color>
+    
+    <!-- Outline -->
+    <color name="outline">#D4D4D8</color>
+    <color name="outline_variant">#E4E4E7</color>
+    
+    <!-- Legacy colors for compatibility -->
+    <color name="purple_200">#A5B4FC</color>
+    <color name="purple_500">#6366F1</color>
+    <color name="purple_700">#4338CA</color>
+    <color name="teal_200">#6EE7B7</color>
+    <color name="teal_700">#047857</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

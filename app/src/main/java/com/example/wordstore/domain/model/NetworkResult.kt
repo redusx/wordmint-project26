@@ -1,4 +1,4 @@
-package com.example.wordstore.data
+package com.example.wordstore.domain.model
 
 sealed class NetworkResult<T>(
     val data: T? = null,

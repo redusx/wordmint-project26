@@ -9,9 +9,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wordstore.data.DictionaryRepository
-import com.example.wordstore.data.NetworkResult
-import com.example.wordstore.data.WordSearchResult
+import com.example.wordstore.data.repository.DictionaryRepository
+import com.example.wordstore.domain.model.NetworkResult
+import com.example.wordstore.domain.model.WordSearchResult
+import com.example.wordstore.util.TranslationManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -41,7 +42,7 @@ class DictionaryViewModel : ViewModel() {
 
     init {
         // Set up progress callback
-        com.example.wordstore.data.TranslationManager.onProgressUpdate = { langCode, progress ->
+        TranslationManager.onProgressUpdate = { langCode, progress ->
             // Not used anymore since we're showing indeterminate progress
         }
     }
@@ -84,7 +85,7 @@ class DictionaryViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
-                val languages = com.example.wordstore.data.TranslationManager.getAvailableLanguages()
+                val languages = TranslationManager.getAvailableLanguages()
                 
                 // Only check top languages initially for performance
                 val topLanguages = listOf("en", "tr", "de", "fr", "es", "it", "ru", "ar", "ja", "zh")
@@ -93,7 +94,7 @@ class DictionaryViewModel : ViewModel() {
                 val statusList = languagesToCheck.map { code ->
                     LanguageModelStatus(
                         code = code,
-                        isDownloaded = com.example.wordstore.data.TranslationManager.isModelDownloaded(code)
+                        isDownloaded = TranslationManager.isModelDownloaded(code)
                     )
                 }
                 
@@ -116,7 +117,7 @@ class DictionaryViewModel : ViewModel() {
                 _downloadState.value = DownloadState.Downloading(code)
                 currentDownloadLangCode = code
                 
-                val error = com.example.wordstore.data.TranslationManager.downloadModel(
+                val error = TranslationManager.downloadModel(
                     code, 
                     requireWifi = !allowCellular,
                     showNotification = true
@@ -144,7 +145,7 @@ class DictionaryViewModel : ViewModel() {
 
     fun deleteLanguage(code: String) {
         viewModelScope.launch {
-            val error = com.example.wordstore.data.TranslationManager.deleteModel(code)
+            val error = TranslationManager.deleteModel(code)
             
             if (error == null) {
                 cachedLanguageStatus = null

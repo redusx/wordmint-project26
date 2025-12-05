@@ -1,8 +1,10 @@
-package com.example.wordstore.data
+package com.example.wordstore.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import com.example.wordstore.data.remote.model.MeaningDto
+import com.example.wordstore.domain.model.TranslatedDefinition
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

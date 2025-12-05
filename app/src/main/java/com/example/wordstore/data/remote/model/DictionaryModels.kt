@@ -1,4 +1,4 @@
-package com.example.wordstore.data
+package com.example.wordstore.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 
