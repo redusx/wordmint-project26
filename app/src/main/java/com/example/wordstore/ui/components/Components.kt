@@ -351,7 +351,7 @@ fun LoadingWordList(
 }
 
 /**
- * Premium gradient button with icon support.
+ * Premium glass button - Liquid Glass style (gray only).
  */
 @Composable
 fun GradientButton(
@@ -368,16 +368,18 @@ fun GradientButton(
         label = "button_scale"
     )
     
+    val buttonShape = RoundedCornerShape(16.dp)
+    
     Button(
         onClick = onClick,
         modifier = modifier
             .height(56.dp)
             .scale(buttonScale),
         enabled = enabled && !isLoading,
-        shape = RoundedCornerShape(CornerRadius.Large),
+        shape = buttonShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            disabledContainerColor = Color.Transparent
         ),
         contentPadding = PaddingValues()
     ) {
@@ -385,21 +387,24 @@ fun GradientButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
+                .border(
+                    width = 1.dp,
+                    color = if (enabled) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.05f),
+                    shape = buttonShape
+                )
                 .background(
-                    brush = if (enabled && !isLoading) Gradients.Primary else Brush.horizontalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.surfaceContainerHigh,
-                            MaterialTheme.colorScheme.surfaceContainerHighest
-                        )
-                    ),
-                    shape = RoundedCornerShape(CornerRadius.Large)
+                    color = if (enabled && !isLoading) 
+                        Color.White.copy(alpha = 0.1f) 
+                    else 
+                        Color.White.copy(alpha = 0.03f),
+                    shape = buttonShape
                 ),
             contentAlignment = Alignment.Center
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = Color.White.copy(alpha = 0.7f),
                     strokeWidth = 2.dp
                 )
             } else {
@@ -411,7 +416,7 @@ fun GradientButton(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = Color.White
+                            tint = if (enabled) Color.White else Color.White.copy(alpha = 0.4f)
                         )
                         Spacer(modifier = Modifier.width(Spacing.S))
                     }
@@ -419,7 +424,7 @@ fun GradientButton(
                         text = text,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = if (enabled) Color.White else Color.White.copy(alpha = 0.4f)
                     )
                 }
             }
