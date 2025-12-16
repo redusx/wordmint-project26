@@ -366,6 +366,9 @@ fun PremiumWordCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
+    // State for delete confirmation dialog
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
     val elevation by animateDpAsState(
         targetValue = if (isPressed) Elevation.Level4 else Elevation.Level1,
         animationSpec = tween(AnimationSpecs.ShortDuration),
@@ -386,6 +389,55 @@ fun PremiumWordCard(
     }
     
     val languageFlag = if (word.sourceLang == "tr") "TR" else "EN"
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            icon = {
+                Icon(
+                    imageVector = WordStoreIcons.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = "Kelimeyi Sil",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Bu kelime kartını silmek istediğinizden emin misiniz?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Sil")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Vazgeç")
+                }
+            },
+            shape = RoundedCornerShape(CornerRadius.XLarge),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = Elevation.Level3
+        )
+    }
     
     Card(
         modifier = Modifier
@@ -484,9 +536,9 @@ fun PremiumWordCard(
                 }
             }
             
-            // Delete button
+            // Delete button - now shows confirmation dialog
             IconButton(
-                onClick = onDelete,
+                onClick = { showDeleteDialog = true },
                 modifier = Modifier.semantics {
                     contentDescription = "$title kelimesini sil"
                     role = Role.Button

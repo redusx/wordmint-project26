@@ -12,22 +12,12 @@ import kotlinx.coroutines.launch
 class WordStoreApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
     val repository by lazy { WordRepository(database.wordDao()) }
-    
-    // Application-level coroutine scope
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
         super.onCreate()
         
         // Initialize TranslationManager with context for notifications
+        // Note: Language models are downloaded on-demand by user action
         TranslationManager.initialize(this)
-        
-        // Download EN/TR models in background at startup
-        // This doesn't block app startup
-        applicationScope.launch {
-            // Try to download with WiFi requirement first
-            // Will show notification if download starts
-            TranslationManager.downloadModels(requireWifi = true, showNotification = true)
-        }
     }
 }

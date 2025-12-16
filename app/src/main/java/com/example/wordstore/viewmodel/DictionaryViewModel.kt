@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,14 +32,23 @@ class DictionaryViewModel : ViewModel() {
     private var lastStatusCheckTime: Long = 0
     private val STATUS_CACHE_DURATION = 30_000L // 30 seconds
 
-    // Download state
-    private val _downloadState = MutableLiveData<DownloadState>(DownloadState.Idle)
-    val downloadState: LiveData<DownloadState> = _downloadState
+    // Parallel download support - Map of language code to download state
+    private val _downloadingLanguages = MutableLiveData<Set<String>>(emptySet())
+    val downloadingLanguages: LiveData<Set<String>> = _downloadingLanguages
+    
+    // Download events for snackbar notifications
+    private val _downloadEvent = MutableLiveData<DownloadEvent?>()
+    val downloadEvent: LiveData<DownloadEvent?> = _downloadEvent
+    
+    // Map to track download jobs per language
+    private val downloadJobs = mutableMapOf<String, Job>()
     
     // Network monitoring
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
-    private var currentDownloadJob: Job? = null
-    private var currentDownloadLangCode: String? = null
+
+    companion object {
+        private const val TAG = "DictionaryViewModel"
+    }
 
     init {
         // Set up progress callback
@@ -52,14 +62,16 @@ class DictionaryViewModel : ViewModel() {
         
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLost(network: Network) {
-                // Network lost, cancel ongoing download
-                if (_downloadState.value is DownloadState.Downloading) {
-                    currentDownloadJob?.cancel()
-                    currentDownloadLangCode?.let { langCode ->
-                        _downloadState.postValue(
-                            DownloadState.Error(langCode, "Bağlantı kesildi. İndirme iptal edildi.")
-                        )
+                // Network lost, cancel all ongoing downloads
+                val activeDownloads = _downloadingLanguages.value ?: emptySet()
+                if (activeDownloads.isNotEmpty()) {
+                    activeDownloads.forEach { langCode ->
+                        downloadJobs[langCode]?.cancel()
                     }
+                    _downloadingLanguages.postValue(emptySet())
+                    _downloadEvent.postValue(
+                        DownloadEvent.Error("all", "Bağlantı kesildi. İndirmeler iptal edildi.")
+                    )
                 }
             }
         }
@@ -108,14 +120,34 @@ class DictionaryViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Check if a specific language is currently being downloaded
+     */
+    fun isDownloading(langCode: String): Boolean {
+        return _downloadingLanguages.value?.contains(langCode) == true
+    }
+
+    /**
+     * Download a language model - supports parallel downloads
+     */
     fun downloadLanguage(code: String, allowCellular: Boolean = false) {
-        // Cancel any existing download
-        currentDownloadJob?.cancel()
+        // If already downloading this language, ignore
+        if (isDownloading(code)) {
+            Log.d(TAG, "Already downloading $code, ignoring duplicate request")
+            return
+        }
         
-        currentDownloadJob = viewModelScope.launch {
+        Log.d(TAG, "Starting download for: $code")
+        
+        // Add to downloading set
+        val currentDownloading = _downloadingLanguages.value?.toMutableSet() ?: mutableSetOf()
+        currentDownloading.add(code)
+        _downloadingLanguages.value = currentDownloading
+        
+        // Start download job
+        val job = viewModelScope.launch {
             try {
-                _downloadState.value = DownloadState.Downloading(code)
-                currentDownloadLangCode = code
+                Log.d(TAG, "Download job started for: $code")
                 
                 val error = TranslationManager.downloadModel(
                     code, 
@@ -124,23 +156,47 @@ class DictionaryViewModel : ViewModel() {
                 )
                 
                 if (error == null) {
-                    _downloadState.value = DownloadState.Success(code)
+                    Log.d(TAG, "Download successful for: $code")
+                    _downloadEvent.value = DownloadEvent.Success(code)
                     // Clear cache to force refresh
                     cachedLanguageStatus = null
                     checkLanguageStatus(forceRefresh = true)
                 } else {
-                    _downloadState.value = DownloadState.Error(code, error)
+                    Log.e(TAG, "Download error for $code: $error")
+                    _downloadEvent.value = DownloadEvent.Error(code, error)
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                Log.d(TAG, "Download cancelled for $code")
+                // Don't report cancellation as error
             } catch (e: Exception) {
-                e.printStackTrace()
-                _downloadState.value = DownloadState.Error(
+                Log.e(TAG, "Download exception for $code", e)
+                _downloadEvent.value = DownloadEvent.Error(
                     code, 
                     e.message ?: "İndirme başarısız"
                 )
             } finally {
-                currentDownloadLangCode = null
+                // Remove from downloading set
+                removeFromDownloading(code)
+                downloadJobs.remove(code)
             }
         }
+        
+        downloadJobs[code] = job
+    }
+
+    /**
+     * Cancel a specific download
+     */
+    fun cancelDownload(code: String) {
+        downloadJobs[code]?.cancel()
+        removeFromDownloading(code)
+        downloadJobs.remove(code)
+    }
+
+    private fun removeFromDownloading(code: String) {
+        val currentDownloading = _downloadingLanguages.value?.toMutableSet() ?: mutableSetOf()
+        currentDownloading.remove(code)
+        _downloadingLanguages.postValue(currentDownloading)
     }
 
     fun deleteLanguage(code: String) {
@@ -151,13 +207,13 @@ class DictionaryViewModel : ViewModel() {
                 cachedLanguageStatus = null
                 checkLanguageStatus(forceRefresh = true)
             } else {
-                _downloadState.value = DownloadState.Error(code, error)
+                _downloadEvent.value = DownloadEvent.Error(code, error)
             }
         }
     }
 
-    fun resetDownloadState() {
-        _downloadState.value = DownloadState.Idle
+    fun clearDownloadEvent() {
+        _downloadEvent.value = null
     }
 
     fun searchWord(query: String, sourceLang: String, targetLang: String) {
@@ -170,15 +226,15 @@ class DictionaryViewModel : ViewModel() {
 
     fun resetState() {
         _searchResult.value = null
-        _downloadState.value = DownloadState.Idle
+        _downloadEvent.value = null
     }
 
     override fun onCleared() {
         super.onCleared()
-        currentDownloadJob?.cancel()
+        downloadJobs.values.forEach { it.cancel() }
+        downloadJobs.clear()
         networkCallback?.let {
             // Note: Can't unregister without ConnectivityManager reference
-            // Would need to store it as a field
         }
     }
 }
@@ -188,9 +244,7 @@ data class LanguageModelStatus(
     val isDownloaded: Boolean
 )
 
-sealed class DownloadState {
-    object Idle : DownloadState()
-    data class Downloading(val langCode: String) : DownloadState()
-    data class Success(val langCode: String) : DownloadState()
-    data class Error(val langCode: String, val message: String) : DownloadState()
+sealed class DownloadEvent {
+    data class Success(val langCode: String) : DownloadEvent()
+    data class Error(val langCode: String, val message: String) : DownloadEvent()
 }

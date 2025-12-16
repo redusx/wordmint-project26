@@ -64,7 +64,7 @@ import com.example.wordstore.ui.theme.IconSize
 import com.example.wordstore.ui.theme.Spacing
 import com.example.wordstore.ui.theme.WordStoreIcons
 import com.example.wordstore.viewmodel.DictionaryViewModel
-import com.example.wordstore.viewmodel.DownloadState
+import com.example.wordstore.viewmodel.DownloadEvent
 import com.example.wordstore.viewmodel.LanguageModelStatus
 import com.example.wordstore.viewmodel.WordViewModel
 
@@ -101,7 +101,8 @@ fun AddWordScreen(
     
     val searchResult by dictionaryViewModel.searchResult.observeAsState()
     val languageStatus by dictionaryViewModel.languageStatus.observeAsState(initial = emptyList())
-    val downloadState by dictionaryViewModel.downloadState.observeAsState(DownloadState.Idle)
+    val downloadingLanguages by dictionaryViewModel.downloadingLanguages.observeAsState(initial = emptySet())
+    val downloadEvent by dictionaryViewModel.downloadEvent.observeAsState()
 
     // Mobile data permission dialog state
     var showDataPermissionDialog by rememberSaveable { mutableStateOf(false) }
@@ -115,17 +116,17 @@ fun AddWordScreen(
     
     // Snackbar host
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(downloadState) {
-        when (val state = downloadState) {
-            is DownloadState.Error -> {
-                snackbarHostState.showSnackbar(state.message)
+    LaunchedEffect(downloadEvent) {
+        when (val event = downloadEvent) {
+            is DownloadEvent.Error -> {
+                snackbarHostState.showSnackbar(event.message)
                 kotlinx.coroutines.delay(3000)
-                dictionaryViewModel.resetDownloadState()
+                dictionaryViewModel.clearDownloadEvent()
             }
-            is DownloadState.Success -> {
-                snackbarHostState.showSnackbar("${state.langCode.uppercase()} dil paketi indirildi")
+            is DownloadEvent.Success -> {
+                snackbarHostState.showSnackbar("${event.langCode.uppercase()} dil paketi indirildi")
                 kotlinx.coroutines.delay(2000)
-                dictionaryViewModel.resetDownloadState()
+                dictionaryViewModel.clearDownloadEvent()
             }
             else -> {}
         }
@@ -193,7 +194,7 @@ fun AddWordScreen(
                     sharedPrefs.edit().putString("last_target_lang", newLang).apply()
                 },
                 languageStatus = languageStatus,
-                downloadState = downloadState,
+                downloadingLanguages = downloadingLanguages,
                 onDownload = { langCode ->
                     if (isOnWiFi(context)) {
                         dictionaryViewModel.downloadLanguage(langCode, allowCellular = false)
@@ -208,19 +209,56 @@ fun AddWordScreen(
             
             Spacer(modifier = Modifier.height(Spacing.L))
 
+            // Check if both source and target language models are downloaded
+            val isSourceDownloaded = languageStatus.find { it.code == sourceLang }?.isDownloaded ?: false
+            val isTargetDownloaded = languageStatus.find { it.code == targetLang }?.isDownloaded ?: false
+            val canTranslate = isSourceDownloaded && isTargetDownloaded
+
+            // Warning message if language packs not downloaded
+            if (!canTranslate && languageStatus.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Spacing.L),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                    ),
+                    shape = RoundedCornerShape(CornerRadius.Medium)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(Spacing.M),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = WordStoreIcons.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(IconSize.Medium)
+                        )
+                        Spacer(modifier = Modifier.width(Spacing.S))
+                        Text(
+                            text = "Çevirmek istediğiniz dil paketini indirin",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Spacing.M))
+            }
+
             // Translate Button
             Box(modifier = Modifier.padding(horizontal = Spacing.L)) {
                 GradientButton(
                     text = "Çevir",
                     onClick = {
-                        if (inputWord.isNotBlank()) {
+                        if (inputWord.isNotBlank() && canTranslate) {
                             focusManager.clearFocus()
                             dictionaryViewModel.searchWord(inputWord, sourceLang, targetLang)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     icon = WordStoreIcons.Translate,
-                    enabled = inputWord.isNotBlank(),
+                    enabled = inputWord.isNotBlank() && canTranslate,
                     isLoading = searchResult is NetworkResult.Loading
                 )
             }
@@ -329,7 +367,7 @@ private fun TranslationSection(
     onSourceLangChange: (String) -> Unit,
     onTargetLangChange: (String) -> Unit,
     languageStatus: List<LanguageModelStatus>,
-    downloadState: DownloadState?,
+    downloadingLanguages: Set<String>,
     onDownload: (String) -> Unit,
     onRefresh: () -> Unit,
     focusManager: androidx.compose.ui.focus.FocusManager
@@ -345,7 +383,7 @@ private fun TranslationSection(
             selectedLang = sourceLang,
             onLangSelected = onSourceLangChange,
             languageStatus = languageStatus,
-            downloadState = downloadState,
+            downloadingLanguages = downloadingLanguages,
             onDownload = onDownload,
             onRefresh = onRefresh,
             imeAction = ImeAction.Next,
@@ -391,7 +429,7 @@ private fun TranslationSection(
             selectedLang = targetLang,
             onLangSelected = onTargetLangChange,
             languageStatus = languageStatus,
-            downloadState = downloadState,
+            downloadingLanguages = downloadingLanguages,
             onDownload = onDownload,
             onRefresh = onRefresh,
             imeAction = ImeAction.Done,
@@ -409,7 +447,7 @@ private fun TranslationInputCard(
     selectedLang: String,
     onLangSelected: (String) -> Unit,
     languageStatus: List<LanguageModelStatus>,
-    downloadState: DownloadState?,
+    downloadingLanguages: Set<String>,
     onDownload: (String) -> Unit,
     onRefresh: () -> Unit,
     imeAction: ImeAction,
@@ -456,7 +494,7 @@ private fun TranslationInputCard(
                     selectedLang = selectedLang,
                     onLangSelected = onLangSelected,
                     languageStatus = languageStatus,
-                    downloadState = downloadState,
+                    downloadingLanguages = downloadingLanguages,
                     onDownload = onDownload,
                     onRefresh = onRefresh
                 )
@@ -501,7 +539,7 @@ private fun PremiumLanguageSelector(
     selectedLang: String,
     onLangSelected: (String) -> Unit,
     languageStatus: List<LanguageModelStatus>,
-    downloadState: DownloadState?,
+    downloadingLanguages: Set<String>,
     onDownload: (String) -> Unit,
     onRefresh: () -> Unit
 ) {
@@ -570,13 +608,13 @@ private fun PremiumLanguageSelector(
                 sortedLanguages.forEach { status ->
                     LanguageMenuItem(
                         status = status,
-                        downloadState = downloadState,
+                        isDownloading = downloadingLanguages.contains(status.code),
                         isSelected = status.code == selectedLang,
                         onClick = {
                             if (status.isDownloaded) {
                                 onLangSelected(status.code)
                                 expanded = false
-                            } else {
+                            } else if (!downloadingLanguages.contains(status.code)) {
                                 onDownload(status.code)
                             }
                         }
@@ -590,7 +628,7 @@ private fun PremiumLanguageSelector(
 @Composable
 private fun LanguageMenuItem(
     status: LanguageModelStatus,
-    downloadState: DownloadState?,
+    isDownloading: Boolean,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -638,7 +676,7 @@ private fun LanguageMenuItem(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    downloadState is DownloadState.Downloading && downloadState.langCode == status.code -> {
+                    isDownloading -> {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp

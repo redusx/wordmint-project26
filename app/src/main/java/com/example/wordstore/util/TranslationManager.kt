@@ -8,6 +8,8 @@ import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 
 object TranslationManager {
 
@@ -120,49 +122,85 @@ object TranslationManager {
      * @return Error message if failed, null if successful
      */
     suspend fun downloadModels(requireWifi: Boolean = false, showNotification: Boolean = true): String? {
+        android.util.Log.d("TranslationManager", "downloadModels started, requireWifi: $requireWifi")
+        
         return try {
             if (!isInitialized) {
+                android.util.Log.e("TranslationManager", "downloadModels failed: not initialized")
                 return "TranslationManager başlatılmamış."
             }
+            
+            val modelManager = com.google.mlkit.common.model.RemoteModelManager.getInstance()
+            val enModel = com.google.mlkit.nl.translate.TranslateRemoteModel.Builder(TranslateLanguage.ENGLISH).build()
+            val trModel = com.google.mlkit.nl.translate.TranslateRemoteModel.Builder(TranslateLanguage.TURKISH).build()
             
             val conditions = DownloadConditions.Builder()
                 .apply { if (requireWifi) requireWifi() }
                 .build()
+
+            // Check if already downloaded
+            val enDownloaded = try { modelManager.isModelDownloaded(enModel).await() } catch (e: Exception) { false }
+            val trDownloaded = try { modelManager.isModelDownloaded(trModel).await() } catch (e: Exception) { false }
+            
+            android.util.Log.d("TranslationManager", "EN downloaded: $enDownloaded, TR downloaded: $trDownloaded")
+            
+            if (enDownloaded && trDownloaded) {
+                android.util.Log.d("TranslationManager", "Both models already downloaded")
+                return null // Already done
+            }
 
             // Start download notification
             if (showNotification) {
                 notificationManager?.showDownloadStarted("EN/TR")
             }
             
-            // Progress updates with delays for visibility
-            onProgressUpdate?.invoke("en", 0)
-            delay(200)
+            // Download English if needed
+            if (!enDownloaded) {
+                android.util.Log.d("TranslationManager", "Downloading EN model...")
+                onProgressUpdate?.invoke("en", 0)
+                withTimeout(90_000L) {
+                    modelManager.download(enModel, conditions).await()
+                }
+                android.util.Log.d("TranslationManager", "EN model downloaded")
+            }
+            onProgressUpdate?.invoke("en", 100)
             
-            onProgressUpdate?.invoke("en", 30)
-            englishToTurkishTranslator?.downloadModelIfNeeded(conditions)?.await()
-            delay(200)
-            
-            onProgressUpdate?.invoke("en", 60)
-            onProgressUpdate?.invoke("tr", 30)
-            delay(200)
-            
-            turkishToEnglishTranslator?.downloadModelIfNeeded(conditions)?.await()
+            // Download Turkish if needed
+            if (!trDownloaded) {
+                android.util.Log.d("TranslationManager", "Downloading TR model...")
+                onProgressUpdate?.invoke("tr", 0)
+                withTimeout(90_000L) {
+                    modelManager.download(trModel, conditions).await()
+                }
+                android.util.Log.d("TranslationManager", "TR model downloaded")
+            }
             onProgressUpdate?.invoke("tr", 100)
-            delay(200)
             
             // Complete notification
             if (showNotification) {
                 notificationManager?.showDownloadComplete("EN/TR")
             }
             
+            android.util.Log.d("TranslationManager", "downloadModels completed successfully")
             lastError = null
             null // Success
+        } catch (e: TimeoutCancellationException) {
+            android.util.Log.e("TranslationManager", "downloadModels timeout", e)
+            val errorMsg = "İndirme zaman aşımına uğradı. Lütfen tekrar deneyin."
+            lastError = errorMsg
+            if (showNotification) {
+                notificationManager?.showDownloadError("EN/TR", errorMsg)
+            }
+            errorMsg
         } catch (e: Exception) {
+            android.util.Log.e("TranslationManager", "downloadModels failed", e)
             val errorMsg = when {
                 e.message?.contains("network", ignoreCase = true) == true -> 
                     "İnternet bağlantısı gerekli. Lütfen bağlantınızı kontrol edin."
                 e.message?.contains("storage", ignoreCase = true) == true ->
                     "Yeterli depolama alanı yok."
+                e.message?.contains("wifi", ignoreCase = true) == true ->
+                    "WiFi bağlantısı gerekli."
                 else ->
                     "Model indirilemedi: ${e.message ?: "Bilinmeyen hata"}"
             }
@@ -214,9 +252,27 @@ object TranslationManager {
         requireWifi: Boolean = false,
         showNotification: Boolean = true
     ): String? {
+        android.util.Log.d("TranslationManager", "downloadModel started for: $langCode, requireWifi: $requireWifi")
+        
         return try {
             val modelManager = com.google.mlkit.common.model.RemoteModelManager.getInstance()
             val model = com.google.mlkit.nl.translate.TranslateRemoteModel.Builder(langCode).build()
+            
+            // Check if already downloaded
+            val alreadyDownloaded = try {
+                modelManager.isModelDownloaded(model).await()
+            } catch (e: Exception) {
+                false
+            }
+            
+            if (alreadyDownloaded) {
+                android.util.Log.d("TranslationManager", "Model $langCode already downloaded")
+                if (showNotification) {
+                    notificationManager?.showDownloadComplete(langCode)
+                }
+                return null // Already downloaded, success
+            }
+            
             val conditions = DownloadConditions.Builder()
                 .apply { if (requireWifi) requireWifi() }
                 .build()
@@ -225,31 +281,52 @@ object TranslationManager {
                 notificationManager?.showDownloadStarted(langCode)
             }
             
-            // Progress updates with delays
             onProgressUpdate?.invoke(langCode, 0)
-            delay(300)
+            android.util.Log.d("TranslationManager", "Starting download for: $langCode")
             
-            onProgressUpdate?.invoke(langCode, 30)
-            delay(300)
+            // Use timeout to prevent hanging forever (90 seconds)
+            withTimeout(90_000L) {
+                onProgressUpdate?.invoke(langCode, 30)
+                android.util.Log.d("TranslationManager", "Calling modelManager.download() for: $langCode")
+                modelManager.download(model, conditions).await()
+            }
             
-            modelManager.download(model, conditions).await()
-            
+            android.util.Log.d("TranslationManager", "Download completed for: $langCode")
             onProgressUpdate?.invoke(langCode, 100)
-            delay(200)
             
             if (showNotification) {
                 notificationManager?.showDownloadComplete(langCode)
             }
             
             null // Success
+        } catch (e: TimeoutCancellationException) {
+            android.util.Log.e("TranslationManager", "Download timeout for: $langCode")
+            val errorMsg = "İndirme zaman aşımına uğradı. Lütfen tekrar deneyin."
+            if (showNotification) {
+                notificationManager?.showDownloadError(langCode, errorMsg)
+            }
+            errorMsg
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            android.util.Log.d("TranslationManager", "Download cancelled for: $langCode")
+            throw e // Re-throw cancellation
         } catch (e: Exception) {
-            e.printStackTrace()
-            val errorMsg = "Model indirilemedi: ${e.message ?: "Bilinmeyen hata"}"
+            android.util.Log.e("TranslationManager", "downloadModel failed for: $langCode", e)
+            val errorMsg = when {
+                e.message?.contains("RESOURCE_EXHAUSTED", ignoreCase = true) == true ->
+                    "Google sunucuları meşgul. Lütfen birkaç dakika sonra tekrar deneyin."
+                e.message?.contains("network", ignoreCase = true) == true ->
+                    "Ağ hatası. İnternet bağlantınızı kontrol edin."
+                e.message?.contains("storage", ignoreCase = true) == true ->
+                    "Yeterli depolama alanı yok."
+                e.message?.contains("wifi", ignoreCase = true) == true ->
+                    "WiFi bağlantısı gerekli. WiFi'ye bağlanın veya mobil veri izni verin."
+                else ->
+                    "Model indirilemedi: ${e.message ?: "Bilinmeyen hata"}"
+            }
             
             if (showNotification) {
                 notificationManager?.showDownloadError(langCode, errorMsg)
             }
-            
             errorMsg
         }
     }
