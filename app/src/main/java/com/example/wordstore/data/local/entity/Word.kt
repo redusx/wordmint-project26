@@ -10,14 +10,15 @@ import com.google.gson.reflect.TypeToken
 
 @Entity(tableName = "words")
 data class Word(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val english: String,
-    val turkish: String, // User can still manually enter this
-    val sourceLang: String = "en",
-    val meanings: List<MeaningDto> = emptyList(),
-    val translatedDefinitions: List<TranslatedDefinition> = emptyList(),
-    val phonetic: String? = null,
-    val audioUrl: String? = null
+        @PrimaryKey(autoGenerate = true) val id: Int = 0,
+        val english: String,
+        val turkish: String, // User can still manually enter this
+        val sourceLang: String = "en",
+        val targetLang: String = "tr",
+        val meanings: List<MeaningDto> = emptyList(),
+        val translatedDefinitions: List<TranslatedDefinition> = emptyList(),
+        val phonetic: String? = null,
+        val audioUrl: String? = null
 )
 
 class Converters {

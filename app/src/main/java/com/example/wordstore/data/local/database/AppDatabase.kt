@@ -8,27 +8,28 @@ import androidx.room.TypeConverters
 import com.example.wordstore.data.local.entity.Converters
 import com.example.wordstore.data.local.entity.Word
 
-@Database(entities = [Word::class], version = 5, exportSchema = false)
+@Database(entities = [Word::class], version = 6, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordDao(): WordDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+        @Volatile private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "word_database"
-                )
-                .fallbackToDestructiveMigration()
-                .build()
-                INSTANCE = instance
-                instance
-            }
+            return INSTANCE
+                    ?: synchronized(this) {
+                        val instance =
+                                Room.databaseBuilder(
+                                                context.applicationContext,
+                                                AppDatabase::class.java,
+                                                "word_database"
+                                        )
+                                        .fallbackToDestructiveMigration()
+                                        .build()
+                        INSTANCE = instance
+                        instance
+                    }
         }
     }
 }

@@ -114,6 +114,9 @@ fun AddWordScreen(
         var showDataPermissionDialog by rememberSaveable { mutableStateOf(false) }
         var pendingDownloadLangCode by rememberSaveable { mutableStateOf<String?>(null) }
 
+        // Prevent multiple save clicks
+        var isSaving by remember { mutableStateOf(false) }
+
         // Setup network monitoring
         LaunchedEffect(Unit) {
                 dictionaryViewModel.checkLanguageStatus()
@@ -321,15 +324,20 @@ fun AddWordScreen(
                         // Save Button
                         Box(modifier = Modifier.padding(horizontal = Spacing.L)) {
                                 OutlinedPremiumButton(
-                                        text = "Kelimeyi Kaydet",
+                                        text =
+                                                if (isSaving) "Kaydediliyor..."
+                                                else "Kelimeyi Kaydet",
                                         onClick = {
-                                                if (inputWord.isNotBlank() &&
+                                                if (!isSaving &&
+                                                                inputWord.isNotBlank() &&
                                                                 outputWord.isNotBlank()
                                                 ) {
+                                                        isSaving = true
                                                         saveWord(
                                                                 inputWord = inputWord,
                                                                 outputWord = outputWord,
                                                                 sourceLang = sourceLang,
+                                                                targetLang = targetLang,
                                                                 searchResult = searchResult,
                                                                 wordViewModel = wordViewModel,
                                                                 onComplete = {
@@ -340,7 +348,10 @@ fun AddWordScreen(
                                         },
                                         modifier = Modifier.fillMaxWidth(),
                                         icon = WordStoreIcons.Save,
-                                        enabled = inputWord.isNotBlank() && outputWord.isNotBlank()
+                                        enabled =
+                                                !isSaving &&
+                                                        inputWord.isNotBlank() &&
+                                                        outputWord.isNotBlank()
                                 )
                         }
 
@@ -785,9 +796,7 @@ private fun LanguageMenuItem(
                                                 Icon(
                                                         painter =
                                                                 painterResource(
-                                                                        id =
-                                                                                R.drawable
-                                                                                        .download_ico
+                                                                        id = R.drawable.download_ico
                                                                 ),
                                                         contentDescription = null,
                                                         tint = Color.White.copy(alpha = 0.6f),
@@ -1072,121 +1081,107 @@ private fun DefinitionResultCard(def: TranslatedDefinition, index: Int) {
 }
 
 fun Modifier.glassDialogContainer(
-    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
-    backgroundColor: Color = Color(0xFF0F1115),
-    accent: Color = GlassColors.Accent
-) = this
-    .clip(shape)
-    // 1️⃣ GERÇEK ARKA PLAN (opaq)
-    .background(backgroundColor)
-    // 2️⃣ GLASS KATMAN
-    .background(
-        Brush.verticalGradient(
-            listOf(
-                accent.copy(alpha = 0.30f),
-                Color.White.copy(alpha = 0.05f)
-            )
-        )
-    )
-    // 3️⃣ BORDER
-    .border(
-        1.dp,
-        Brush.verticalGradient(
-            listOf(
-                accent.copy(alpha = 0.6f),
-                Color.Transparent
-            )
-        ),
-        shape
-    )
-
-
+        shape: RoundedCornerShape = RoundedCornerShape(24.dp),
+        backgroundColor: Color = Color(0xFF0F1115),
+        accent: Color = GlassColors.Accent
+) =
+        this.clip(shape)
+                // 1️⃣ GERÇEK ARKA PLAN (opaq)
+                .background(backgroundColor)
+                // 2️⃣ GLASS KATMAN
+                .background(
+                        Brush.verticalGradient(
+                                listOf(accent.copy(alpha = 0.30f), Color.White.copy(alpha = 0.05f))
+                        )
+                )
+                // 3️⃣ BORDER
+                .border(
+                        1.dp,
+                        Brush.verticalGradient(
+                                listOf(accent.copy(alpha = 0.6f), Color.Transparent)
+                        ),
+                        shape
+                )
 
 @Composable
 private fun PremiumAlertDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    title: String,
-    text: String,
-    confirmText: String,
-    dismissText: String
+        onDismiss: () -> Unit,
+        onConfirm: () -> Unit,
+        title: String,
+        text: String,
+        confirmText: String,
+        dismissText: String
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(CornerRadius.XLarge),
-        containerColor = Color.Transparent,
-        tonalElevation = 0.dp,
-        icon = {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .glassAccentContainer(CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = WordStoreIcons.Wifi,
-                    contentDescription = null,
-                    tint = Color.White
-                )
-            }
-        },
-        title = {
-            Text(
-                title,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
-                color = Color.White
-            )
-        },
-        text = {
-            Text(
-                text,
-                textAlign = TextAlign.Center,
-                color = Color.White.copy(alpha = 0.75f)
-            )
-        },
-        confirmButton = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .glassAccentContainer(RoundedCornerShape(14.dp))
-                    .clickable(onClick = onConfirm),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    confirmText,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
-        },dismissButton = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .clickable(onClick = onDismiss),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    dismissText,
-                    color = Color.White.copy(alpha = 0.6f)
-                )
-            }
-        },
-        modifier = Modifier
-            .glassDialogContainer(RoundedCornerShape(CornerRadius.XLarge))
-            .padding(16.dp)
-    )
+        AlertDialog(
+                onDismissRequest = onDismiss,
+                shape = RoundedCornerShape(CornerRadius.XLarge),
+                containerColor = Color.Transparent,
+                tonalElevation = 0.dp,
+                icon = {
+                        Box(
+                                modifier = Modifier.size(48.dp).glassAccentContainer(CircleShape),
+                                contentAlignment = Alignment.Center
+                        ) {
+                                Icon(
+                                        imageVector = WordStoreIcons.Wifi,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                )
+                        }
+                },
+                title = {
+                        Text(
+                                title,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.Center,
+                                color = Color.White
+                        )
+                },
+                text = {
+                        Text(
+                                text,
+                                textAlign = TextAlign.Center,
+                                color = Color.White.copy(alpha = 0.75f)
+                        )
+                },
+                confirmButton = {
+                        Box(
+                                modifier =
+                                        Modifier.fillMaxWidth()
+                                                .height(48.dp)
+                                                .glassAccentContainer(RoundedCornerShape(14.dp))
+                                                .clickable(onClick = onConfirm),
+                                contentAlignment = Alignment.Center
+                        ) {
+                                Text(
+                                        confirmText,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                )
+                        }
+                },
+                dismissButton = {
+                        Box(
+                                modifier =
+                                        Modifier.fillMaxWidth()
+                                                .height(44.dp)
+                                                .clip(RoundedCornerShape(14.dp))
+                                                .clickable(onClick = onDismiss),
+                                contentAlignment = Alignment.Center
+                        ) { Text(dismissText, color = Color.White.copy(alpha = 0.6f)) }
+                },
+                modifier =
+                        Modifier.glassDialogContainer(RoundedCornerShape(CornerRadius.XLarge))
+                                .padding(16.dp)
+        )
 }
-
 
 // Utility functions
 private fun saveWord(
         inputWord: String,
         outputWord: String,
         sourceLang: String,
+        targetLang: String,
         searchResult: NetworkResult<WordSearchResult>?,
         wordViewModel: WordViewModel,
         onComplete: () -> Unit
@@ -1238,6 +1233,7 @@ private fun saveWord(
                         english = finalEnglish,
                         turkish = finalTurkish,
                         sourceLang = sourceLang,
+                        targetLang = targetLang,
                         meanings = meanings,
                         translatedDefinitions = translatedDefinitions,
                         phonetic = phonetic,

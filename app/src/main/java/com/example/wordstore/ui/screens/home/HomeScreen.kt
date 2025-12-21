@@ -46,6 +46,7 @@ import com.example.wordstore.domain.model.TranslatedDefinition
 import com.example.wordstore.domain.model.TranslatedExample
 import com.example.wordstore.ui.components.EmptyState
 import com.example.wordstore.ui.components.GlassFab
+import com.example.wordstore.ui.components.PronunciationButton
 import com.example.wordstore.ui.components.SectionHeader
 import com.example.wordstore.ui.theme.AnimationSpecs
 import com.example.wordstore.ui.theme.GlassColors
@@ -127,36 +128,49 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
                                                 )
                                         }
                                 } else {
-                                        LazyColumn(
-                                                modifier = Modifier.fillMaxSize(),
-                                                contentPadding =
-                                                        PaddingValues(
-                                                                start = Spacing.M,
-                                                                end = Spacing.M,
-                                                                top = Spacing.S,
-                                                                bottom = 100.dp // Space for FAB
-                                                        ),
-                                                verticalArrangement =
-                                                        Arrangement.spacedBy(Spacing.MS)
-                                        ) {
-                                                // Section header
-                                                item {
-                                                        SectionHeader(
-                                                                title = "Kelimelerim",
-                                                        )
-                                                }
+                                        Column(modifier = Modifier.fillMaxSize()) {
+                                                // Fixed section header - won't scroll
+                                                SectionHeader(
+                                                        title = "Kelimelerim",
+                                                        modifier =
+                                                                Modifier.padding(
+                                                                        horizontal = Spacing.M
+                                                                )
+                                                )
 
-                                                itemsIndexed(
-                                                        items = allWords,
-                                                        key = { _, word -> word.id }
-                                                ) { _, word ->
-                                                        PremiumWordCard(
-                                                                word = word,
-                                                                onClick = { selectedWord = word },
-                                                                onDelete = {
-                                                                        wordViewModel.delete(word)
-                                                                }
-                                                        )
+                                                Spacer(modifier = Modifier.height(Spacing.S))
+
+                                                // Scrollable word cards
+                                                LazyColumn(
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        contentPadding =
+                                                                PaddingValues(
+                                                                        start = Spacing.M,
+                                                                        end = Spacing.M,
+                                                                        top = Spacing.XS,
+                                                                        bottom = 100.dp // Space for
+                                                                        // FAB
+                                                                        ),
+                                                        verticalArrangement =
+                                                                Arrangement.spacedBy(Spacing.MS)
+                                                ) {
+                                                        itemsIndexed(
+                                                                items = allWords,
+                                                                key = { _, word -> word.id }
+                                                        ) { _, word ->
+                                                                PremiumWordCard(
+                                                                        word = word,
+                                                                        onClick = {
+                                                                                selectedWord = word
+                                                                        },
+                                                                        onDelete = {
+                                                                                wordViewModel
+                                                                                        .delete(
+                                                                                                word
+                                                                                        )
+                                                                        }
+                                                                )
+                                                        }
                                                 }
                                         }
                                 }
@@ -410,7 +424,7 @@ fun PremiumWordCard(word: Word, onClick: () -> Unit, onDelete: () -> Unit) {
                         word.english to word.turkish
                 }
 
-        val languageFlag = if (word.sourceLang == "tr") "TR" else "EN"
+        val languageFlag = word.sourceLang.uppercase()
 
         // Pure gray glass colors
         val glassSurface = GlassColors.GlassCardDark
@@ -652,20 +666,31 @@ fun PremiumWordCard(word: Word, onClick: () -> Unit, onDelete: () -> Unit) {
                                 )
                         }
 
-                        // Delete button - subtle gray/muted red
-                        IconButton(
-                                onClick = { showDeleteDialog = true },
-                                modifier =
-                                        Modifier.size(40.dp)
-                                                .clip(RoundedCornerShape(10.dp))
-                                                .background(Color.White.copy(alpha = 0.05f))
+                        // Action buttons row
+                        Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
                         ) {
-                                Icon(
-                                        imageVector = WordStoreIcons.Delete,
-                                        contentDescription = "$title kelimesini sil",
-                                        tint = Color.White.copy(alpha = 0.5f),
-                                        modifier = Modifier.size(20.dp)
-                                )
+                                // Pronunciation button - only for English words
+                                if (word.sourceLang == "en") {
+                                        PronunciationButton(word = word.english, size = 40.dp)
+                                }
+
+                                // Delete button - subtle gray/muted red
+                                IconButton(
+                                        onClick = { showDeleteDialog = true },
+                                        modifier =
+                                                Modifier.size(40.dp)
+                                                        .clip(RoundedCornerShape(10.dp))
+                                                        .background(Color.White.copy(alpha = 0.05f))
+                                ) {
+                                        Icon(
+                                                imageVector = WordStoreIcons.Delete,
+                                                contentDescription = "$title kelimesini sil",
+                                                tint = Color.White.copy(alpha = 0.5f),
+                                                modifier = Modifier.size(20.dp)
+                                        )
+                                }
                         }
                 }
         }
@@ -706,9 +731,10 @@ fun WordDetailDialog(word: Word, onDismiss: () -> Unit) {
                                         verticalArrangement = Arrangement.spacedBy(Spacing.M)
                                 ) {
                                         // Phonetic section
-                                        if (!word.phonetic.isNullOrBlank()) {
-                                                item { PhoneticCard(phonetic = word.phonetic) }
-                                        }
+                                        //      if (!word.phonetic.isNullOrBlank()) {
+                                        //             item { PhoneticCard(phonetic = word.phonetic)
+                                        // }
+                                        //     }
 
                                         // Definitions
                                         if (word.translatedDefinitions.isNotEmpty()) {
@@ -826,7 +852,7 @@ fun WordDetailDialog(word: Word, onDismiss: () -> Unit) {
 private fun DialogHeader(word: Word, onDismiss: () -> Unit) {
         val title = if (word.sourceLang == "tr") word.turkish else word.english
         val subtitle = if (word.sourceLang == "tr") word.english else word.turkish
-        val subtitleLabel = if (word.sourceLang == "tr") "EN" else "TR"
+        val subtitleLabel = word.targetLang.uppercase()
 
         Box(modifier = Modifier.fillMaxWidth().background(GlassColors.DarkGray850)) {
                 Column(modifier = Modifier.padding(Spacing.L)) {
@@ -851,13 +877,24 @@ private fun DialogHeader(word: Word, onDismiss: () -> Unit) {
                                 }
                         }
 
-                        // Title
-                        Text(
-                                text = title.replaceFirstChar { it.uppercase() },
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                        )
+                        // Title row with pronunciation button for English words
+                        Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.MS)
+                        ) {
+                                Text(
+                                        text = title.replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        modifier = Modifier.weight(1f, fill = false)
+                                )
+
+                                // Pronunciation button - only for English words
+                                if (word.sourceLang == "en") {
+                                        PronunciationButton(word = word.english, size = 44.dp)
+                                }
+                        }
 
                         Spacer(modifier = Modifier.height(Spacing.S))
 
