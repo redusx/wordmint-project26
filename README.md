@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">📚 WordStore</h1>
+  <h1 align="center">📚 WordMint</h1>
   <p align="center">
     <strong>Akıllı Kelime Defteriniz — Çeviri, Tanım ve Telaffuz Bir Arada</strong>
   </p>
@@ -16,7 +16,7 @@
 
 ## 🌟 Nedir?
 
-**WordStore**, yabancı dil öğrenenlerin kelime hazinelerini güçlendirmek için tasarlanmış modern bir Android uygulamasıdır. Sadece bir kelime defteri değil; **yapay zekâ destekli çeviri**, **sözlük entegrasyonu**, **telaffuz dinleme** ve **çevrimdışı çalışabilme** yetenekleriyle tam bir dil öğrenme asistanıdır.
+**WordMint**, yabancı dil öğrenenlerin kelime hazinelerini güçlendirmek için tasarlanmış modern bir Android uygulamasıdır. Sadece bir kelime defteri değil; **yapay zekâ destekli çeviri**, **sözlük entegrasyonu**, **telaffuz dinleme** ve **çevrimdışı çalışabilme** yetenekleriyle tam bir dil öğrenme asistanıdır.
 
 > Bir kelime aratın → tanımını, örnek cümlelerini ve fonetik gösterimini görün → çevirisini alın → tek tuşla kaydedin. Hepsi **premium, cam etkili (glassmorphism)** bir arayüzde.
 

@@ -196,7 +196,7 @@ private fun HomeHeader(wordCount: Int, modifier: Modifier = Modifier) {
 
                                 Column {
                                         Text(
-                                                text = "WordStore",
+                                                text = "WordMint",
                                                 style = MaterialTheme.typography.headlineSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color =
