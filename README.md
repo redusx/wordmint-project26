@@ -52,6 +52,10 @@ Requires Android Studio with SDK 35 and JDK 17. Minimum supported Android versio
 
 Language packs are about 30 MB each and download only when you ask for them.
 
+## License
+
+WordMint is released under the [MIT License](LICENSE). Third-party components keep their own licenses.
+
 ## Third-party licenses
 
 Fonts (SIL OFL) and the py-fsrs reference (MIT) are in [third_party/licenses](third_party/licenses).
