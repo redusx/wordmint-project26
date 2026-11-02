@@ -1,250 +1,213 @@
 package com.example.wordstore.viewmodel
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wordstore.data.repository.DictionaryRepository
-import com.example.wordstore.domain.model.NetworkResult
-import com.example.wordstore.domain.model.WordSearchResult
-import com.example.wordstore.util.TranslationManager
+import com.example.wordstore.data.local.entity.Word
+import com.example.wordstore.domain.model.DictionaryStatus
+import com.example.wordstore.domain.model.LookupResult
+import com.example.wordstore.domain.model.WordLookup
+import com.example.wordstore.domain.repository.DictionaryRepository
+import com.example.wordstore.domain.repository.LanguagePack
+import com.example.wordstore.domain.repository.LanguagePackRepository
+import com.example.wordstore.domain.repository.SaveWordResult
+import com.example.wordstore.domain.repository.SettingsRepository
+import com.example.wordstore.domain.repository.WordRepository
+import java.time.Clock
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class DictionaryViewModel : ViewModel() {
+sealed interface LookupState {
+    data object Idle : LookupState
+    data object Loading : LookupState
+    data object PacksRequired : LookupState
+    data class Found(val lookup: WordLookup) : LookupState
+}
 
-    private val repository = DictionaryRepository()
+data class DictionaryUiState(
+    val query: String = "",
+    val learningLang: String = "en",
+    val knownLang: String = "tr",
+    val isReversed: Boolean = false,
+    val lookup: LookupState = LookupState.Idle,
+    val translationDraft: String = "",
+    val isSaving: Boolean = false,
+    val savedWordId: Long? = null,
+    /** What is already saved for this word, which takes priority over a fresh machine translation. */
+    val savedTranslation: String? = null,
+    val missingPacks: List<String> = emptyList(),
+    val downloadingPacks: List<String> = emptyList(),
+    val packs: List<LanguagePack> = emptyList()
+) {
+    val fromLang: String get() = if (isReversed) knownLang else learningLang
+    val toLang: String get() = if (isReversed) learningLang else knownLang
+    val canSearch: Boolean get() = query.isNotBlank() && lookup !is LookupState.Loading
+    val canSave: Boolean
+        get() = lookup is LookupState.Found && translationDraft.isNotBlank() && savedWordId == null && !isSaving
+}
 
-    private val _searchResult = MutableLiveData<NetworkResult<WordSearchResult>>()
-    val searchResult: LiveData<NetworkResult<WordSearchResult>> = _searchResult
+@OptIn(ExperimentalCoroutinesApi::class)
+class DictionaryViewModel(
+    private val dictionary: DictionaryRepository,
+    private val words: WordRepository,
+    private val settings: SettingsRepository,
+    private val packs: LanguagePackRepository,
+    private val clock: Clock
+) : ViewModel() {
 
-    private val _languageStatus = MutableLiveData<List<LanguageModelStatus>>()
-    val languageStatus: LiveData<List<LanguageModelStatus>> = _languageStatus
-    
-    // Cache for language status
-    private var cachedLanguageStatus: List<LanguageModelStatus>? = null
-    private var lastStatusCheckTime: Long = 0
-    private val STATUS_CACHE_DURATION = 30_000L // 30 seconds
+    private data class Input(
+        val query: String = "",
+        val isReversed: Boolean = false,
+        val lookup: LookupState = LookupState.Idle,
+        val translationDraft: String = "",
+        val isSaving: Boolean = false
+    )
 
-    // Parallel download support - Map of language code to download state
-    private val _downloadingLanguages = MutableLiveData<Set<String>>(emptySet())
-    val downloadingLanguages: LiveData<Set<String>> = _downloadingLanguages
-    
-    // Download events for snackbar notifications
-    private val _downloadEvent = MutableLiveData<DownloadEvent?>()
-    val downloadEvent: LiveData<DownloadEvent?> = _downloadEvent
-    
-    // Map to track download jobs per language
-    private val downloadJobs = mutableMapOf<String, Job>()
-    
-    // Network monitoring
-    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private val input = MutableStateFlow(Input())
+    private var searchJob: Job? = null
 
-    companion object {
-        private const val TAG = "DictionaryViewModel"
+    private val savedMatch = input.flatMapLatest { current ->
+        val found = current.lookup as? LookupState.Found
+        if (found == null) {
+            flowOf(null)
+        } else {
+            words.observeMatch(found.lookup.term, found.lookup.sourceLang, found.lookup.targetLang)
+        }
     }
+
+    val state: StateFlow<DictionaryUiState> = combine(
+        input,
+        settings.settings,
+        packs.packs,
+        savedMatch
+    ) { current, appSettings, packList, match ->
+        val required = requiredPacks(appSettings.sourceLang, appSettings.targetLang)
+        val byCode = packList.associateBy { it.code }
+        DictionaryUiState(
+            query = current.query,
+            learningLang = appSettings.sourceLang,
+            knownLang = appSettings.targetLang,
+            isReversed = current.isReversed,
+            lookup = current.lookup,
+            translationDraft = current.translationDraft,
+            isSaving = current.isSaving,
+            savedWordId = match?.id,
+            savedTranslation = match?.translation,
+            // Until the pack list has loaded, nothing is known to be missing.
+            missingPacks = if (packList.isEmpty()) emptyList() else required.filter { byCode[it]?.isDownloaded != true },
+            downloadingPacks = required.filter { byCode[it]?.isDownloading == true },
+            packs = packList
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DictionaryUiState())
 
     init {
-        // Set up progress callback
-        TranslationManager.onProgressUpdate = { langCode, progress ->
-            // Not used anymore since we're showing indeterminate progress
-        }
+        refreshPacks()
     }
 
-    fun setupNetworkMonitoring(context: Context) {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        
-        networkCallback = object : ConnectivityManager.NetworkCallback() {
-            override fun onLost(network: Network) {
-                // Network lost, cancel all ongoing downloads
-                val activeDownloads = _downloadingLanguages.value ?: emptySet()
-                if (activeDownloads.isNotEmpty()) {
-                    activeDownloads.forEach { langCode ->
-                        downloadJobs[langCode]?.cancel()
-                    }
-                    _downloadingLanguages.postValue(emptySet())
-                    _downloadEvent.postValue(
-                        DownloadEvent.Error("all", "Bağlantı kesildi. İndirmeler iptal edildi.")
+    fun refreshPacks() {
+        viewModelScope.launch { packs.refresh() }
+    }
+
+    fun onQueryChange(query: String) = input.update { it.copy(query = query) }
+
+    fun clear() {
+        searchJob?.cancel()
+        input.update { Input(isReversed = it.isReversed) }
+    }
+
+    fun swapDirection() {
+        input.update { it.copy(isReversed = !it.isReversed) }
+    }
+
+    fun setLearningLanguage(code: String) {
+        val current = settings.settings.value
+        // Picking the other side's language swaps them, because a pair must stay two languages.
+        val known = if (code == current.targetLang) current.sourceLang else current.targetLang
+        settings.setLanguages(code, known)
+        resetResult()
+    }
+
+    fun setKnownLanguage(code: String) {
+        val current = settings.settings.value
+        val learning = if (code == current.sourceLang) current.targetLang else current.sourceLang
+        settings.setLanguages(learning, code)
+        resetResult()
+    }
+
+    private fun resetResult() {
+        searchJob?.cancel()
+        input.update { it.copy(lookup = LookupState.Idle, translationDraft = "") }
+    }
+
+    fun downloadPack(code: String, allowCellular: Boolean) = packs.download(code, allowCellular)
+
+    fun isOnUnmeteredNetwork() = packs.isOnUnmeteredNetwork()
+
+    fun search() {
+        val current = input.value
+        val query = current.query.trim()
+        if (query.isEmpty()) return
+
+        val appSettings = settings.settings.value
+        val from = if (current.isReversed) appSettings.targetLang else appSettings.sourceLang
+        searchJob?.cancel()
+        input.update { it.copy(lookup = LookupState.Loading, translationDraft = "") }
+
+        searchJob = viewModelScope.launch {
+            when (val result = dictionary.lookup(query, from, appSettings.sourceLang, appSettings.targetLang)) {
+                LookupResult.PacksRequired -> input.update { it.copy(lookup = LookupState.PacksRequired) }
+                is LookupResult.Success -> input.update {
+                    it.copy(
+                        lookup = LookupState.Found(result.lookup),
+                        translationDraft = result.lookup.translation.orEmpty()
                     )
                 }
             }
         }
-        
-        val request = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-        
-        networkCallback?.let {
-            connectivityManager.registerNetworkCallback(request, it)
-        }
     }
 
-    fun checkLanguageStatus(forceRefresh: Boolean = false) {
-        val now = System.currentTimeMillis()
-        
-        // Use cache if available and fresh
-        if (!forceRefresh && cachedLanguageStatus != null && 
-            (now - lastStatusCheckTime) < STATUS_CACHE_DURATION) {
-            _languageStatus.value = cachedLanguageStatus
-            return
-        }
-        
+    fun onTranslationChange(text: String) = input.update { it.copy(translationDraft = text) }
+
+    fun save() {
+        val current = input.value
+        val lookup = (current.lookup as? LookupState.Found)?.lookup ?: return
+        if (current.translationDraft.isBlank() || current.isSaving) return
+        input.update { it.copy(isSaving = true) }
+
         viewModelScope.launch {
-            try {
-                val languages = TranslationManager.getAvailableLanguages()
-                
-                // Only check top languages initially for performance
-                val topLanguages = listOf("en", "tr", "de", "fr", "es", "it", "ru", "ar", "ja", "zh")
-                val languagesToCheck = languages.filter { it in topLanguages }
-                
-                val statusList = languagesToCheck.map { code ->
-                    LanguageModelStatus(
-                        code = code,
-                        isDownloaded = TranslationManager.isModelDownloaded(code)
-                    )
-                }
-                
-                cachedLanguageStatus = statusList
-                lastStatusCheckTime = now
-                _languageStatus.value = statusList
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _languageStatus.value = emptyList()
-            }
-        }
-    }
-
-    /**
-     * Check if a specific language is currently being downloaded
-     */
-    fun isDownloading(langCode: String): Boolean {
-        return _downloadingLanguages.value?.contains(langCode) == true
-    }
-
-    /**
-     * Download a language model - supports parallel downloads
-     */
-    fun downloadLanguage(code: String, allowCellular: Boolean = false) {
-        // If already downloading this language, ignore
-        if (isDownloading(code)) {
-            Log.d(TAG, "Already downloading $code, ignoring duplicate request")
-            return
-        }
-        
-        Log.d(TAG, "Starting download for: $code")
-        
-        // Add to downloading set
-        val currentDownloading = _downloadingLanguages.value?.toMutableSet() ?: mutableSetOf()
-        currentDownloading.add(code)
-        _downloadingLanguages.value = currentDownloading
-        
-        // Start download job
-        val job = viewModelScope.launch {
-            try {
-                Log.d(TAG, "Download job started for: $code")
-                
-                val error = TranslationManager.downloadModel(
-                    code, 
-                    requireWifi = !allowCellular,
-                    showNotification = true
+            val now = clock.millis()
+            val result: SaveWordResult = words.save(
+                Word(
+                    term = lookup.term,
+                    translation = current.translationDraft,
+                    sourceLang = lookup.sourceLang,
+                    targetLang = lookup.targetLang,
+                    meanings = lookup.meanings,
+                    translatedDefinitions = lookup.translatedDefinitions,
+                    phonetic = lookup.phonetic,
+                    createdAt = now,
+                    updatedAt = now
                 )
-                
-                if (error == null) {
-                    Log.d(TAG, "Download successful for: $code")
-                    _downloadEvent.value = DownloadEvent.Success(code)
-                    // Clear cache to force refresh
-                    cachedLanguageStatus = null
-                    checkLanguageStatus(forceRefresh = true)
-                } else {
-                    Log.e(TAG, "Download error for $code: $error")
-                    _downloadEvent.value = DownloadEvent.Error(code, error)
-                }
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                Log.d(TAG, "Download cancelled for $code")
-                // Don't report cancellation as error
-            } catch (e: Exception) {
-                Log.e(TAG, "Download exception for $code", e)
-                _downloadEvent.value = DownloadEvent.Error(
-                    code, 
-                    e.message ?: "İndirme başarısız"
-                )
-            } finally {
-                // Remove from downloading set
-                removeFromDownloading(code)
-                downloadJobs.remove(code)
-            }
-        }
-        
-        downloadJobs[code] = job
-    }
-
-    /**
-     * Cancel a specific download
-     */
-    fun cancelDownload(code: String) {
-        downloadJobs[code]?.cancel()
-        removeFromDownloading(code)
-        downloadJobs.remove(code)
-    }
-
-    private fun removeFromDownloading(code: String) {
-        val currentDownloading = _downloadingLanguages.value?.toMutableSet() ?: mutableSetOf()
-        currentDownloading.remove(code)
-        _downloadingLanguages.postValue(currentDownloading)
-    }
-
-    fun deleteLanguage(code: String) {
-        viewModelScope.launch {
-            val error = TranslationManager.deleteModel(code)
-            
-            if (error == null) {
-                cachedLanguageStatus = null
-                checkLanguageStatus(forceRefresh = true)
-            } else {
-                _downloadEvent.value = DownloadEvent.Error(code, error)
-            }
+            )
+            // The saved state itself arrives through the observed match on this term.
+            check(result is SaveWordResult.Saved || result is SaveWordResult.AlreadyExists)
+            input.update { it.copy(isSaving = false) }
         }
     }
 
-    fun clearDownloadEvent() {
-        _downloadEvent.value = null
-    }
-
-    fun searchWord(query: String, sourceLang: String, targetLang: String) {
-        viewModelScope.launch {
-            repository.searchWord(query, sourceLang, targetLang).collect { result ->
-                _searchResult.value = result
-            }
-        }
-    }
-
-    fun resetState() {
-        _searchResult.value = null
-        _downloadEvent.value = null
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        downloadJobs.values.forEach { it.cancel() }
-        downloadJobs.clear()
-        networkCallback?.let {
-            // Note: Can't unregister without ConnectivityManager reference
-        }
+    companion object {
+        /** English is needed too when neither side is English, because definitions come from it. */
+        fun requiredPacks(learning: String, known: String): List<String> =
+            listOf(learning, known, "en").distinct()
     }
 }
 
-data class LanguageModelStatus(
-    val code: String,
-    val isDownloaded: Boolean
-)
-
-sealed class DownloadEvent {
-    data class Success(val langCode: String) : DownloadEvent()
-    data class Error(val langCode: String, val message: String) : DownloadEvent()
-}
+val DictionaryStatus.hasDefinitions: Boolean get() = this == DictionaryStatus.FOUND

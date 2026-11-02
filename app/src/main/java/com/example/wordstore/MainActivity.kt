@@ -1,93 +1,65 @@
 package com.example.wordstore
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.Composable
-import com.example.wordstore.viewmodel.DictionaryViewModel
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.example.wordstore.ui.theme.WordStoreTheme
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.wordstore.ui.screens.home.HomeScreen
-import com.example.wordstore.ui.screens.addword.AddWordScreen
-import com.example.wordstore.viewmodel.WordViewModel
-import com.example.wordstore.viewmodel.WordViewModelFactory
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.wordstore.reminders.ReminderNotifier
+import com.example.wordstore.ui.components.LocalPronunciationPlayer
+import com.example.wordstore.ui.navigation.WordMintApp
+import com.example.wordstore.ui.theme.WordMintTheme
 
+class MainActivity : ComponentActivity() {
 
-class MainActivity : AppCompatActivity() {
-
-    private val dictionaryViewModel: DictionaryViewModel by viewModels()
-    private val wordViewModel: WordViewModel by viewModels {
-        WordViewModelFactory((application as WordStoreApplication).repository)
-    }
+    private var openStudyRequest by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val container = (application as WordStoreApplication).container
+        if (savedInstanceState == null) handleIntent(intent)
+
         setContent {
-            WordStoreTheme {
-                MainScreen(
-                    wordViewModel = wordViewModel,
-                    dictionaryViewModel = dictionaryViewModel
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun MainScreen(
-        wordViewModel: WordViewModel,
-        dictionaryViewModel: DictionaryViewModel
-    ) {
-        val navController = rememberNavController()
-
-        NavHost(navController = navController, startDestination = "home") {
-            composable("home") {
-                HomeScreen(navController = navController, wordViewModel = wordViewModel)
-            }
-            composable("add_word") {
-                AddWordScreen(
-                    navController = navController,
-                    wordViewModel = wordViewModel,
-                    dictionaryViewModel = dictionaryViewModel
-                )
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Preview(showBackground = true)
-    @Composable
-    fun LoadingPreview() {
-        WordStoreTheme {
-            Scaffold(topBar = { TopAppBar(title = { Text("Preview Translator") }) }) { padding ->
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            val settings by container.settings.settings.collectAsStateWithLifecycle()
+            WordMintTheme(themeMode = settings.themeMode) {
+                val colors = WordMintTheme.colors
+                DisposableEffect(colors.isDark) {
+                    val transparent = android.graphics.Color.TRANSPARENT
+                    val style = if (colors.isDark) {
+                        SystemBarStyle.dark(transparent)
+                    } else {
+                        SystemBarStyle.light(transparent, colors.ink.toArgb())
+                    }
+                    enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+                    onDispose { }
+                }
+                CompositionLocalProvider(LocalPronunciationPlayer provides container.pronunciation) {
+                    WordMintApp(
+                        container = container,
+                        onboardingDone = settings.onboardingDone,
+                        openStudyRequest = openStudyRequest,
+                        onStudyRequestHandled = { openStudyRequest = false }
+                    )
                 }
             }
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Preview(showBackground = true)
-    @Composable
-    fun ErrorPreview() {
-        WordStoreTheme {
-            Scaffold(topBar = { TopAppBar(title = { Text("Preview Translator") }) }) { padding ->
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    Text("Error: Network connection failed.", color = MaterialTheme.colorScheme.error)
-                }
-            }
-        }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
     }
 
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == ReminderNotifier.ACTION_OPEN_STUDY) openStudyRequest = true
+    }
 }

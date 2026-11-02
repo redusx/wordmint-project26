@@ -1,82 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    
-    <!-- Background gradient circle -->
-    <group>
-        <clip-path android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"/>
-        
-        <!-- Gradient background -->
-        <path
-            android:pathData="M14,14h80v80h-80z"
-            android:fillColor="#6366F1"/>
-    </group>
-    
-    <!-- Book/Translate icon -->
+    <!-- A glass tube, part-filled with verdigris, its neck lit by copper. -->
     <path
-        android:pathData="M54,28c-14.36,0 -26,11.64 -26,26s11.64,26 26,26s26,-11.64 26,-26S68.36,28 54,28z"
+        android:pathData="M45,32h18v40a9,9 0,0 1,-18 0z"
+        android:fillColor="#26FFFFFF" />
+    <path
+        android:pathData="M45,56c6,-3 12,3 18,0v16a9,9 0,0 1,-18 0z"
+        android:fillColor="#63CDB8" />
+    <path
+        android:pathData="M45,32v40a9,9 0,0 0,18 0V32"
         android:fillColor="#00000000"
-        android:strokeWidth="0"/>
-    
-    <!-- Book pages left -->
+        android:strokeColor="#E9F1EE"
+        android:strokeWidth="2.5" />
     <path
-        android:pathData="M38,42v22c0,2 1,3 3,3c2,0 13,-4.5 13,-4.5V40.5S44,45 41,45C38.5,45 38,43.5 38,42z"
-        android:fillColor="#FFFFFF"/>
-    
-    <!-- Book pages right -->
-    <path
-        android:pathData="M70,42v22c0,2 -1,3 -3,3c-2,0 -13,-4.5 -13,-4.5V40.5S64,45 67,45C69.5,45 70,43.5 70,42z"
-        android:fillColor="#FFFFFF"/>
-    
-    <!-- Book spine -->
-    <path
-        android:pathData="M54,40.5v22"
-        android:strokeWidth="2"
+        android:pathData="M41,31h26"
         android:fillColor="#00000000"
-        android:strokeColor="#E0E7FF"/>
-    
-    <!-- Letter A -->
-    <path
-        android:pathData="M43,52l3,-6l3,6M44,50.5h4"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeColor="#A5B4FC"
+        android:strokeColor="#E5A67F"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
-    
-    <!-- Letter B (Cyrillic style) -->
-    <path
-        android:pathData="M62,46v6M62,46h2.5c1.38,0 2.5,0.67 2.5,1.5s-1.12,1.5 -2.5,1.5h-2.5M62,49h3c1.66,0 3,0.67 3,1.5s-1.34,1.5 -3,1.5h-3"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeColor="#A5B4FC"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
-    
-    <!-- Translation arrows -->
-    <path
-        android:pathData="M49,55l-2,2l2,2"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeColor="#FCD34D"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
-    
-    <path
-        android:pathData="M59,59l2,-2l-2,-2"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeColor="#FCD34D"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
-    
-    <path
-        android:pathData="M47,57h14"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000"
-        android:strokeColor="#FCD34D"
-        android:strokeLineCap="round"/>
-    
+        android:strokeWidth="3.5" />
 </vector>

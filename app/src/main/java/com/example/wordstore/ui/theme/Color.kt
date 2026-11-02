@@ -1,150 +1,106 @@
 package com.example.wordstore.ui.theme
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-// =============================================================================
-// WORDSTORE PREMIUM COLOR PALETTE
-// A sophisticated, modern color scheme inspired by contemporary design trends
-// =============================================================================
+/**
+ * The Patina palette. A word ages like a minted coin: new words are copper, mastered words are
+ * verdigris, and bronze sits between them. See docs/DESIGN_SYSTEM.md.
+ */
+@Immutable
+data class WordMintColors(
+    val isDark: Boolean,
+    val canvas: Color,
+    val canvasDeep: Color,
+    val surface: Color,
+    val surfaceSunken: Color,
+    val ink: Color,
+    val inkSecondary: Color,
+    val inkMuted: Color,
+    val hairline: Color,
+    val primary: Color,
+    val onPrimary: Color,
+    val copper: Color,
+    val bronze: Color,
+    val verdigris: Color,
+    val sea: Color,
+    val danger: Color,
+    /** Marks only, not text: separated by lightness as well as hue, so they survive color blindness. */
+    val statusNew: Color,
+    val statusLearning: Color,
+    val statusMastered: Color,
+    val glassTint: Color,
+    val glassTintOpaque: Color,
+    val glassRimTop: Color,
+    val glassRimBottom: Color,
+    val glassShadow: Color,
+    val tubeGlass: Color,
+    val tubeRim: Color,
+    val tubeHighlight: Color,
+    val liquid: Color,
+    val liquidDeep: Color
+)
 
-// =============================================================================
-// PRIMARY - Deep Violet/Purple (Premium, elegant, creative)
-// =============================================================================
-val md_theme_light_primary = Color(0xFF6366F1)           // Indigo 500
-val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_primaryContainer = Color(0xFFE0E7FF)   // Indigo 100
-val md_theme_light_onPrimaryContainer = Color(0xFF1E1B4B) // Indigo 950
+val LightWordMintColors = WordMintColors(
+    isDark = false,
+    canvas = Color(0xFFEDF1EF),
+    canvasDeep = Color(0xFFE4EBE7),
+    surface = Color(0xFFFBFCFB),
+    surfaceSunken = Color(0xFFE3E9E6),
+    ink = Color(0xFF10211E),
+    inkSecondary = Color(0xFF3F514B),
+    inkMuted = Color(0xFF586962),
+    hairline = Color(0x1F10211E),
+    primary = Color(0xFF0E6A5B),
+    onPrimary = Color(0xFFFFFFFF),
+    copper = Color(0xFFA2522A),
+    bronze = Color(0xFF7C6C1F),
+    verdigris = Color(0xFF14796A),
+    sea = Color(0xFF1C6488),
+    danger = Color(0xFFA8321F),
+    statusNew = Color(0xFFA2522A),
+    statusLearning = Color(0xFFC9A227),
+    statusMastered = Color(0xFF14796A),
+    glassTint = Color(0x99F6F9F7),
+    glassTintOpaque = Color(0xF0F6F9F7),
+    glassRimTop = Color(0xE6FFFFFF),
+    glassRimBottom = Color(0x1410211E),
+    glassShadow = Color(0x2E0B2A24),
+    tubeGlass = Color(0x66FFFFFF),
+    tubeRim = Color(0x4010211E),
+    tubeHighlight = Color(0xCCFFFFFF),
+    liquid = Color(0xFF2B9C87),
+    liquidDeep = Color(0xFF14796A)
+)
 
-val md_theme_dark_primary = Color(0xFFA5B4FC)            // Indigo 300
-val md_theme_dark_onPrimary = Color(0xFF1E1B4B)          // Indigo 950
-val md_theme_dark_primaryContainer = Color(0xFF4338CA)    // Indigo 700
-val md_theme_dark_onPrimaryContainer = Color(0xFFE0E7FF)  // Indigo 100
-
-// =============================================================================
-// SECONDARY - Emerald/Teal (Success, growth, learning)
-// =============================================================================
-val md_theme_light_secondary = Color(0xFF10B981)          // Emerald 500
-val md_theme_light_onSecondary = Color(0xFFFFFFFF)
-val md_theme_light_secondaryContainer = Color(0xFFD1FAE5)  // Emerald 100
-val md_theme_light_onSecondaryContainer = Color(0xFF064E3B) // Emerald 900
-
-val md_theme_dark_secondary = Color(0xFF6EE7B7)           // Emerald 300
-val md_theme_dark_onSecondary = Color(0xFF064E3B)         // Emerald 900
-val md_theme_dark_secondaryContainer = Color(0xFF047857)   // Emerald 700
-val md_theme_dark_onSecondaryContainer = Color(0xFFD1FAE5) // Emerald 100
-
-// =============================================================================
-// TERTIARY - Amber/Gold (Premium accent, highlights)
-// =============================================================================
-val md_theme_light_tertiary = Color(0xFFF59E0B)           // Amber 500
-val md_theme_light_onTertiary = Color(0xFFFFFFFF)
-val md_theme_light_tertiaryContainer = Color(0xFFFEF3C7)   // Amber 100
-val md_theme_light_onTertiaryContainer = Color(0xFF78350F) // Amber 900
-
-val md_theme_dark_tertiary = Color(0xFFFCD34D)            // Amber 300
-val md_theme_dark_onTertiary = Color(0xFF78350F)          // Amber 900
-val md_theme_dark_tertiaryContainer = Color(0xFFD97706)    // Amber 600
-val md_theme_dark_onTertiaryContainer = Color(0xFFFEF3C7)  // Amber 100
-
-// =============================================================================
-// ERROR - Rose/Red (Clear error indication)
-// =============================================================================
-val md_theme_light_error = Color(0xFFE11D48)              // Rose 600
-val md_theme_light_errorContainer = Color(0xFFFFE4E6)      // Rose 100
-val md_theme_light_onError = Color(0xFFFFFFFF)
-val md_theme_light_onErrorContainer = Color(0xFF881337)    // Rose 900
-
-val md_theme_dark_error = Color(0xFFFDA4AF)               // Rose 300
-val md_theme_dark_errorContainer = Color(0xFFBE123C)       // Rose 700
-val md_theme_dark_onError = Color(0xFF881337)             // Rose 900
-val md_theme_dark_onErrorContainer = Color(0xFFFFE4E6)     // Rose 100
-
-// =============================================================================
-// BACKGROUND & SURFACE - Cool Gray for depth and layering
-// =============================================================================
-val md_theme_light_background = Color(0xFFFAFAFC)         // Very light cool gray
-val md_theme_light_onBackground = Color(0xFF18181B)       // Zinc 900
-val md_theme_light_surface = Color(0xFFFFFFFF)
-val md_theme_light_onSurface = Color(0xFF18181B)          // Zinc 900
-val md_theme_light_surfaceVariant = Color(0xFFF4F4F5)     // Zinc 100
-val md_theme_light_onSurfaceVariant = Color(0xFF52525B)   // Zinc 600
-val md_theme_light_surfaceTint = Color(0xFF6366F1)        // Primary
-
-val md_theme_dark_background = Color(0xFF09090B)          // Zinc 950
-val md_theme_dark_onBackground = Color(0xFFFAFAFA)        // Zinc 50
-val md_theme_dark_surface = Color(0xFF18181B)             // Zinc 900
-val md_theme_dark_onSurface = Color(0xFFFAFAFA)           // Zinc 50
-val md_theme_dark_surfaceVariant = Color(0xFF27272A)      // Zinc 800
-val md_theme_dark_onSurfaceVariant = Color(0xFFA1A1AA)    // Zinc 400
-val md_theme_dark_surfaceTint = Color(0xFFA5B4FC)         // Primary dark
-
-// =============================================================================
-// OUTLINE - For borders and dividers
-// =============================================================================
-val md_theme_light_outline = Color(0xFFD4D4D8)            // Zinc 300
-val md_theme_light_outlineVariant = Color(0xFFE4E4E7)     // Zinc 200
-
-val md_theme_dark_outline = Color(0xFF52525B)             // Zinc 600
-val md_theme_dark_outlineVariant = Color(0xFF3F3F46)      // Zinc 700
-
-// =============================================================================
-// INVERSE - For snackbars and inverse surfaces
-// =============================================================================
-val md_theme_light_inverseSurface = Color(0xFF18181B)     // Zinc 900
-val md_theme_light_inverseOnSurface = Color(0xFFFAFAFA)   // Zinc 50
-val md_theme_light_inversePrimary = Color(0xFFA5B4FC)     // Indigo 300
-
-val md_theme_dark_inverseSurface = Color(0xFFFAFAFA)      // Zinc 50
-val md_theme_dark_inverseOnSurface = Color(0xFF18181B)    // Zinc 900
-val md_theme_dark_inversePrimary = Color(0xFF6366F1)      // Indigo 500
-
-// =============================================================================
-// SCRIM - For modal backgrounds
-// =============================================================================
-val md_theme_light_scrim = Color(0xFF000000)
-val md_theme_dark_scrim = Color(0xFF000000)
-
-// =============================================================================
-// SURFACE CONTAINERS - For M3 surface hierarchy (depth layering)
-// =============================================================================
-val md_theme_light_surfaceContainerLowest = Color(0xFFFFFFFF)
-val md_theme_light_surfaceContainerLow = Color(0xFFFAFAFC)
-val md_theme_light_surfaceContainer = Color(0xFFF4F4F5)
-val md_theme_light_surfaceContainerHigh = Color(0xFFE4E4E7)
-val md_theme_light_surfaceContainerHighest = Color(0xFFD4D4D8)
-
-val md_theme_dark_surfaceContainerLowest = Color(0xFF09090B)
-val md_theme_dark_surfaceContainerLow = Color(0xFF18181B)
-val md_theme_dark_surfaceContainer = Color(0xFF27272A)
-val md_theme_dark_surfaceContainerHigh = Color(0xFF3F3F46)
-val md_theme_dark_surfaceContainerHighest = Color(0xFF52525B)
-
-// =============================================================================
-// CUSTOM BRAND COLORS - For special UI elements
-// =============================================================================
-object BrandColors {
-    // Gradient colors for premium effects
-    val GradientStart = Color(0xFF6366F1)       // Indigo 500
-    val GradientMiddle = Color(0xFF8B5CF6)      // Violet 500
-    val GradientEnd = Color(0xFFA855F7)         // Purple 500
-    
-    // Success states
-    val Success = Color(0xFF10B981)             // Emerald 500
-    val SuccessLight = Color(0xFFD1FAE5)        // Emerald 100
-    
-    // Warning states
-    val Warning = Color(0xFFF59E0B)             // Amber 500
-    val WarningLight = Color(0xFFFEF3C7)        // Amber 100
-    
-    // Info states
-    val Info = Color(0xFF3B82F6)                // Blue 500
-    val InfoLight = Color(0xFFDBEAFE)           // Blue 100
-    
-    // Card backgrounds with subtle tint
-    val CardGradientStart = Color(0xFFFAFAFC)
-    val CardGradientEnd = Color(0xFFF0F0FF)     // Very subtle purple tint
-    
-    // Text highlights
-    val TextHighlight = Color(0xFF6366F1)       // Primary for highlights
-    val TextMuted = Color(0xFF71717A)           // Zinc 500
-}
+val DarkWordMintColors = WordMintColors(
+    isDark = true,
+    canvas = Color(0xFF0D1A18),
+    canvasDeep = Color(0xFF091312),
+    surface = Color(0xFF162523),
+    surfaceSunken = Color(0xFF10201D),
+    ink = Color(0xFFE9F1EE),
+    inkSecondary = Color(0xFFAFC0BA),
+    inkMuted = Color(0xFF8FA199),
+    hairline = Color(0x1AFFFFFF),
+    primary = Color(0xFF63CDB8),
+    onPrimary = Color(0xFF06211C),
+    copper = Color(0xFFE5A67F),
+    bronze = Color(0xFFCDB866),
+    verdigris = Color(0xFF63CDB8),
+    sea = Color(0xFF7FC3E0),
+    danger = Color(0xFFF0907C),
+    statusNew = Color(0xFFD9804A),
+    statusLearning = Color(0xFFE8CF73),
+    statusMastered = Color(0xFF3DB39D),
+    glassTint = Color(0x8C1C2F2C),
+    glassTintOpaque = Color(0xF21C2F2C),
+    glassRimTop = Color(0x38FFFFFF),
+    glassRimBottom = Color(0x0AFFFFFF),
+    glassShadow = Color(0x66000000),
+    tubeGlass = Color(0x14FFFFFF),
+    tubeRim = Color(0x40FFFFFF),
+    tubeHighlight = Color(0x40FFFFFF),
+    liquid = Color(0xFF63CDB8),
+    liquidDeep = Color(0xFF2B8F7D)
+)

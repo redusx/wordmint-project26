@@ -1,6 +1,3 @@
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,21 +13,10 @@ android {
         applicationId = "com.example.wordstore"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Read API key from local.properties
-        val properties = Properties()
-        val localPropertiesFile = project.rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            properties.load(FileInputStream(localPropertiesFile))
-            val huggingFaceApiKey = properties.getProperty("HUGGING_FACE_API_KEY", "")
-            buildConfigField("String", "HUGGING_FACE_API_KEY", "\"$huggingFaceApiKey\"")
-        } else {
-            buildConfigField("String", "HUGGING_FACE_API_KEY", "\"\"")
-        }
     }
 
     buildTypes {
@@ -45,41 +31,48 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "11"
     }
     buildFeatures {
         compose = true
-        viewBinding = true
-        buildConfig = true
+    }
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-//    implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.runtime.livedata)
-    implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.haze)
 
-    // Traditional Android UI components
-    implementation(libs.constraintlayout)
-    implementation(libs.material)
-
-    // Retrofit & Moshi
+    // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.retrofit.moshi)
     implementation(libs.retrofit.gson)
-    implementation(libs.moshi.kotlin)
+    implementation(libs.gson)
     implementation(libs.okhttp.logging)
 
     // Coroutines
@@ -94,16 +87,23 @@ dependencies {
     // Navigation
     implementation(libs.navigation.compose)
 
-    // Jsoup
-    implementation(libs.jsoup)
+    // Reminders
+    implementation(libs.work.runtime.ktx)
 
     // ML Kit Translation
     implementation(libs.mlkit.translate)
     implementation(libs.mlkit.common)
 
     testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.coroutines.test)
+    androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.work.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)

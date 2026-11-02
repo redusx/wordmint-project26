@@ -1,82 +1,279 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App Identity -->
-    <string name="app_name">WordMint</string>
-    <string name="app_tagline">Kelime Öğrenme Asistanı</string>
-    
+    <string name="app_name" translatable="false">WordMint</string>
+
     <!-- Navigation -->
-    <string name="nav_home">Ana Sayfa</string>
-    <string name="nav_add_word">Kelime Ekle</string>
-    <string name="nav_back">Geri</string>
-    <string name="nav_close">Kapat</string>
-    
-    <!-- Home Screen -->
-    <string name="home_empty_title">Henüz kelime yok</string>
-    <string name="home_empty_description">Kelime dağarcığınızı oluşturmaya başlamak için yeni kelimeler ekleyin</string>
-    <string name="home_add_first_word">İlk Kelimeyi Ekle</string>
-    <string name="home_my_words">Kelimelerim</string>
-    <string name="home_total_words">Toplam Kelime</string>
-    <string name="home_learning">Öğrenme</string>
-    <string name="home_active">Aktif</string>
-    
-    <!-- Add Word Screen -->
-    <string name="add_word_title">Yeni Kelime Ekle</string>
-    <string name="add_word_subtitle">Kelime dağarcığınızı genişletin</string>
-    <string name="add_word_source">Kaynak Kelime</string>
-    <string name="add_word_translation">Çeviri</string>
-    <string name="add_word_placeholder">Kelime girin...</string>
-    <string name="add_word_translate">Çevir</string>
-    <string name="add_word_save">Kelimeyi Kaydet</string>
-    <string name="add_word_swap_languages">Dilleri değiştir</string>
-    
-    <!-- Word Detail -->
-    <string name="word_detail_title">Kelime Detayı</string>
-    <string name="word_detail_definitions">Tanımlar</string>
-    <string name="word_detail_meanings">Anlamlar</string>
-    <string name="word_detail_examples">Örnekler</string>
-    <string name="word_detail_phonetic">Telaffuz</string>
-    <string name="word_detail_no_definitions">Tanım bulunamadı</string>
-    
-    <!-- Languages -->
-    <string name="lang_english">English</string>
-    <string name="lang_turkish">Türkçe</string>
-    <string name="lang_german">Deutsch</string>
-    <string name="lang_french">Français</string>
-    <string name="lang_spanish">Español</string>
-    <string name="lang_italian">Italiano</string>
-    <string name="lang_russian">Русский</string>
-    <string name="lang_arabic">العربية</string>
-    <string name="lang_japanese">日本語</string>
-    <string name="lang_chinese">中文</string>
-    <string name="lang_select">Dil seç</string>
-    <string name="lang_loading">Diller yükleniyor...</string>
-    <string name="lang_downloaded">İndirildi</string>
-    <string name="lang_download">İndir</string>
-    
-    <!-- Actions -->
-    <string name="action_delete">Sil</string>
-    <string name="action_edit">Düzenle</string>
-    <string name="action_save">Kaydet</string>
-    <string name="action_cancel">İptal</string>
-    <string name="action_confirm">Onayla</string>
-    
-    <!-- Status Messages -->
-    <string name="status_loading">Yükleniyor...</string>
-    <string name="status_translating">Çeviri yapılıyor...</string>
-    <string name="status_success">Başarılı</string>
-    <string name="status_error">Hata</string>
-    <string name="status_no_network">İnternet bağlantısı yok</string>
-    
-    <!-- Dialogs -->
-    <string name="dialog_mobile_data_title">Mobil Veri Kullanımı</string>
-    <string name="dialog_mobile_data_message">Dil paketi indirmek için mobil veri kullanılacak. Devam etmek istiyor musunuz?</string>
-    <string name="dialog_download">İndir</string>
-    
-    <!-- Accessibility -->
-    <string name="a11y_add_new_word">Yeni kelime ekle</string>
-    <string name="a11y_delete_word">Kelimeyi sil</string>
-    <string name="a11y_go_back">Geri dön</string>
-    <string name="a11y_close_dialog">Diyaloğu kapat</string>
-    <string name="a11y_translate">Çevir</string>
-    <string name="a11y_save_word">Kelimeyi kaydet</string>
+    <string name="nav_today">Today</string>
+    <string name="nav_dictionary">Dictionary</string>
+    <string name="nav_words">Words</string>
+    <string name="nav_progress">Progress</string>
+
+    <!-- Common actions -->
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_save_changes">Save changes</string>
+    <string name="action_try_again">Try again</string>
+    <string name="selected">Selected</string>
+
+    <!-- Time -->
+    <string name="interval_minutes">%1$d min</string>
+    <string name="interval_hours">%1$d h</string>
+    <string name="interval_days">%1$d d</string>
+    <string name="interval_months">%1$d mo</string>
+    <string name="interval_years">%1$d y</string>
+    <string name="due_now">Due now</string>
+    <string name="due_in">In %1$s</string>
+    <string name="duration_minutes_seconds">%1$d min %2$d s</string>
+    <string name="duration_seconds">%1$d s</string>
+    <plurals name="days_count">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="reviews_count">
+        <item quantity="one">%1$d review</item>
+        <item quantity="other">%1$d reviews</item>
+    </plurals>
+    <plurals name="new_words_count">
+        <item quantity="one">%1$d new word</item>
+        <item quantity="other">%1$d new words</item>
+    </plurals>
+
+    <!-- Today -->
+    <string name="today_empty_title">Start with one word.</string>
+    <string name="today_empty_body">Look up a word you came across today. It becomes your first card.</string>
+    <string name="today_done_title">Today is done.</string>
+    <string name="today_clear_title">Nothing to review right now.</string>
+    <plurals name="today_waiting">
+        <item quantity="one">%1$d word to review today.</item>
+        <item quantity="other">%1$d words to review today.</item>
+    </plurals>
+    <plurals name="today_left">
+        <item quantity="one">%1$d word left today.</item>
+        <item quantity="other">%1$d words left today.</item>
+    </plurals>
+    <plurals name="today_reviewed_count">
+        <item quantity="one">%1$d review finished so far.</item>
+        <item quantity="other">%1$d reviews finished so far.</item>
+    </plurals>
+    <plurals name="today_tube_description">
+        <item quantity="one">%1$d of %2$d word finished today</item>
+        <item quantity="other">%1$d of %2$d words finished today</item>
+    </plurals>
+    <string name="today_saved_as_you_go">Every rating is saved as you go.</string>
+    <string name="today_next_review">Next review: %1$s</string>
+    <string name="today_start">Start review</string>
+    <string name="today_continue">Continue review</string>
+    <string name="today_look_up">Look up a word</string>
+    <string name="today_plan">Today\'s plan</string>
+    <string name="today_plan_reviews">Reviews due</string>
+    <string name="today_plan_steps">Still in short steps</string>
+    <string name="today_plan_new">New words started</string>
+    <string name="today_plan_new_value">%1$d of %2$d</string>
+    <string name="today_streak">Current streak</string>
+    <string name="today_recent">Recently added</string>
+
+    <!-- Study -->
+    <string name="study_exit">Leave session. Your ratings are saved.</string>
+    <string name="study_position">%1$d of %2$d</string>
+    <string name="study_new_word">New word</string>
+    <string name="study_show_hint">Show a hint</string>
+    <string name="study_show_answer">Show answer</string>
+    <string name="study_feedback">%1$s: back in %2$s</string>
+    <string name="study_rating_description">%1$s, next review in %2$s</string>
+    <string name="rating_again">Again</string>
+    <string name="rating_hard">Hard</string>
+    <string name="rating_good">Good</string>
+    <string name="rating_easy">Easy</string>
+    <string name="study_empty_title">Nothing to review right now.</string>
+    <string name="study_empty_body">Save a few words in the dictionary and they will show up here.</string>
+    <string name="study_failed_title">Your cards could not be loaded.</string>
+    <string name="study_failed_body">Your words and progress are still saved. Try loading them again.</string>
+    <plurals name="study_complete_title">
+        <item quantity="one">You reviewed %1$d word.</item>
+        <item quantity="other">You reviewed %1$d words.</item>
+    </plurals>
+    <string name="study_complete_time">Time spent</string>
+    <string name="study_complete_new">New words started</string>
+    <string name="study_complete_next">Next review</string>
+    <string name="study_complete_ratings">Your ratings</string>
+    <string name="study_complete_ratings_note">These are your own assessments, and they set when each word comes back.</string>
+    <string name="study_back_today">Back to Today</string>
+
+    <!-- Dictionary -->
+    <string name="dictionary_placeholder">Type a word</string>
+    <string name="dictionary_look_up">Look up</string>
+    <string name="dictionary_idle">Type a word in %1$s to see its translation, pronunciation and definitions.</string>
+    <string name="dictionary_swap">Switch which language you type in</string>
+    <string name="dictionary_change_language">Change language, now %1$s</string>
+    <string name="dictionary_packs_missing">Translation runs on this device. Download these language packs first: %1$s.</string>
+    <string name="dictionary_packs_downloading">Downloading language packs: %1$s. You can keep using the app.</string>
+    <string name="dictionary_packs_download">Download packs</string>
+    <string name="dictionary_packs_required_title">This search needs language packs.</string>
+    <string name="dictionary_packs_required_body">Download the packs above, or switch to typing in the language you are learning.</string>
+    <string name="dictionary_translation_label">Translation in %1$s. You can edit it.</string>
+    <string name="dictionary_translation_saved">Your saved translation in %1$s.</string>
+    <string name="dictionary_translation_placeholder">Type the meaning</string>
+    <string name="dictionary_not_found">The dictionary has no entry for this word. You can still save it with your own translation.</string>
+    <string name="dictionary_offline">You are offline, so definitions are not available. The translation still works.</string>
+    <string name="dictionary_service_error">The dictionary did not respond. Try again, or save the word without definitions.</string>
+    <string name="dictionary_save">Save word</string>
+    <string name="dictionary_in_your_words">In your words</string>
+
+    <!-- Words -->
+    <string name="library_search">Search your words</string>
+    <string name="library_sort">Sort words</string>
+    <string name="filter_all">All</string>
+    <string name="filter_new">New</string>
+    <string name="filter_learning">Learning</string>
+    <string name="filter_due">Due</string>
+    <string name="filter_mastered">Mastered</string>
+    <string name="sort_recent">Recently added</string>
+    <string name="sort_alphabetical">A to Z</string>
+    <string name="sort_next_review">Next review</string>
+    <string name="sort_hardest">Hardest first</string>
+    <string name="library_empty_title">No words yet.</string>
+    <string name="library_empty_body">Words you save from the dictionary appear here.</string>
+    <string name="library_no_match_title">No matching words.</string>
+    <string name="library_no_match_body">Try another search or filter.</string>
+    <string name="library_row_description">%1$s, %2$s. %3$s. %4$s.</string>
+
+    <!-- Word details -->
+    <string name="detail_gone_title">This word is no longer saved.</string>
+    <string name="detail_gone_body">It may have been deleted.</string>
+    <string name="detail_learning">Learning</string>
+    <string name="detail_status">Status</string>
+    <string name="detail_next_review">Next review</string>
+    <string name="detail_next_review_new">Waiting for its first review</string>
+    <string name="detail_recall">Chance you remember it now</string>
+    <string name="detail_memory">Memory strength</string>
+    <plurals name="detail_memory_days">
+        <item quantity="one">About %1$d day</item>
+        <item quantity="other">About %1$d days</item>
+    </plurals>
+    <string name="detail_difficulty">Difficulty</string>
+    <string name="detail_difficulty_value">%1$d of 10</string>
+    <string name="detail_reviews">Reviews</string>
+    <string name="detail_lapses">Times forgotten</string>
+    <string name="detail_last_review">Last reviewed</string>
+    <string name="detail_meanings">Meanings</string>
+    <string name="detail_history">Review history</string>
+    <string name="detail_history_empty">No reviews yet.</string>
+    <string name="detail_history_entry">%1$s, %2$s</string>
+    <string name="detail_delete_title">Delete “%1$s”?</string>
+    <string name="detail_delete_body">The word and its schedule are removed. Past reviews still count in your Progress.</string>
+    <string name="detail_edit_title">Edit word</string>
+    <string name="detail_edit_term">Word in %1$s</string>
+    <string name="detail_edit_translation">Translation in %1$s</string>
+    <string name="detail_edit_phonetic">Pronunciation (IPA)</string>
+    <string name="detail_edit_hint">Your note, shown as a hint</string>
+    <string name="detail_edit_duplicate">You already have this word in this language pair.</string>
+    <string name="word_synonyms">Synonyms</string>
+    <string name="word_antonyms">Antonyms</string>
+    <string name="pronounce_word">Hear %1$s</string>
+    <string name="pronounce_unavailable">Audio is not available for %1$s. Tap to try again.</string>
+
+    <!-- Progress -->
+    <string name="progress_empty_title">No reviews yet.</string>
+    <string name="progress_empty_body">Your activity and recall appear here after your first study session.</string>
+    <string name="progress_activity">Activity</string>
+    <string name="progress_range_week">7 days</string>
+    <string name="progress_range_month">30 days</string>
+    <string name="progress_day_detail">%1$s: %2$s, %3$s</string>
+    <string name="progress_activity_description">%1$s on %2$d of the last %3$d days</string>
+    <string name="progress_goal_legend">Darker bars mark days you reached your new-word goal.</string>
+    <string name="progress_recall">Self-rated recall</string>
+    <plurals name="progress_recall_body">
+        <item quantity="one">Share of your %1$d review of older words in the last 30 days that you did not rate Again.</item>
+        <item quantity="other">Share of your %1$d reviews of older words in the last 30 days that you did not rate Again.</item>
+    </plurals>
+    <plurals name="progress_recall_waiting">
+        <item quantity="one">Appears after %1$d reviews of older words. You have %2$d so far.</item>
+        <item quantity="other">Appears after %1$d reviews of older words. You have %2$d so far.</item>
+    </plurals>
+    <string name="progress_consistency">Consistency</string>
+    <string name="progress_consistency_summary">Active on %1$d of the last %2$d days</string>
+    <string name="progress_consistency_day">%1$s: %2$s</string>
+    <plurals name="progress_vocabulary">
+        <item quantity="one">%1$d word saved</item>
+        <item quantity="other">%1$d words saved</item>
+    </plurals>
+    <string name="progress_distribution_description">%1$d new, %2$d learning, %3$d mastered</string>
+    <string name="progress_forecast">Coming up</string>
+    <string name="progress_forecast_description">%1$s due in the next 7 days</string>
+    <string name="progress_totals">Totals</string>
+    <string name="progress_total_reviews">Reviews, all time</string>
+    <string name="progress_best_streak">Best streak</string>
+    <string name="progress_goals_met">New-word goal reached</string>
+    <string name="progress_goals_met_value">%1$d of the last %2$d days</string>
+    <string name="progress_history">Recent reviews</string>
+    <string name="progress_deleted_word">Deleted word</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_languages">Languages</string>
+    <string name="settings_learning">Language you are learning</string>
+    <string name="settings_known">Translate into</string>
+    <string name="settings_goal">Daily goal</string>
+    <string name="settings_goal_label">New words per day</string>
+    <string name="settings_goal_note">This limits only new words. Words that are due always stay in your reviews.</string>
+    <string name="settings_goal_decrease">Fewer new words per day</string>
+    <string name="settings_goal_increase">More new words per day</string>
+    <string name="settings_reminder">Reminder</string>
+    <string name="settings_reminder_label">Daily study reminder</string>
+    <string name="settings_reminder_time">Reminder time</string>
+    <string name="settings_reminder_note">Sent at most once a day, only when words are waiting. It can arrive a little late to save battery.</string>
+    <string name="settings_notifications_off">Notifications are off for WordMint, so reminders cannot be sent.</string>
+    <string name="settings_notifications_open">Open notification settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_body">WordMint keeps your words and reviews on this device. Reviews are scheduled with FSRS-6, based on the MIT-licensed py-fsrs reference. Definitions come from freedictionaryapi.com, and translation runs on your device with Google ML Kit. Gentium Book Plus and Instrument Sans are used under the SIL Open Font License.</string>
+
+    <!-- Language packs -->
+    <string name="pack_on_device">On this device</string>
+    <string name="pack_needs_download">Needs download</string>
+    <string name="pack_downloading">Downloading</string>
+    <string name="pack_ready">%1$s is ready.</string>
+    <string name="pack_cellular_title">Use mobile data?</string>
+    <string name="pack_cellular_body">The %1$s pack is about 30 MB. You are not on Wi-Fi.</string>
+    <string name="pack_cellular_confirm">Download now</string>
+    <string name="pack_cellular_wait">Wait for Wi-Fi</string>
+    <string name="pack_failed_network">%1$s could not download. Check your connection and try again.</string>
+    <string name="pack_failed_wifi">%1$s is waiting for Wi-Fi. Connect to Wi-Fi or allow mobile data.</string>
+    <string name="pack_failed_storage">%1$s could not download because storage is full.</string>
+    <string name="pack_failed_busy">The download service is busy. Try %1$s again in a few minutes.</string>
+    <string name="pack_failed_timeout">%1$s took too long to download. Try again.</string>
+    <string name="pack_failed_unknown">%1$s could not download. Try again.</string>
+    <string name="pack_notification_downloading">Downloading %1$s</string>
+    <string name="pack_notification_ready">%1$s is ready</string>
+    <string name="pack_notification_failed">%1$s could not download</string>
+    <string name="channel_downloads">Language pack downloads</string>
+
+    <!-- Reminders -->
+    <string name="channel_reminders">Study reminders</string>
+    <string name="channel_reminders_description">A daily reminder when words are waiting for review.</string>
+    <plurals name="reminder_title">
+        <item quantity="one">%1$d word is waiting for you</item>
+        <item quantity="other">%1$d words are waiting for you</item>
+    </plurals>
+    <string name="reminder_body">Reviewing now helps them stick.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_languages_title">Which language are you learning?</string>
+    <string name="onboarding_languages_body">Cards show a word in this language and ask you to recall its meaning.</string>
+    <string name="onboarding_languages_note">Translation works offline once its language packs are downloaded, about 30 MB each. You choose when to use mobile data.</string>
+    <string name="onboarding_goal_title">How many new words a day?</string>
+    <string name="onboarding_goal_body">Each new word comes back for review, so a small number adds up. Ten is a sustainable start.</string>
+    <string name="onboarding_reminder_title">Want a daily reminder?</string>
+    <string name="onboarding_reminder_body">Words stick when you review them on time. A reminder comes once a day, only when words are waiting. WordMint works fully without it.</string>
+    <string name="onboarding_reminder_enable">Turn on reminders</string>
+    <string name="onboarding_reminder_on">Reminders are on for %1$s.</string>
+    <string name="onboarding_reminder_denied">Reminders are off, and the app works the same. You can allow them later in Settings.</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_finish">Start using WordMint</string>
 </resources>

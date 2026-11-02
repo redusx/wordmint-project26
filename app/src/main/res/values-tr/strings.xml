@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Gezinme -->
+    <string name="nav_today">Bugün</string>
+    <string name="nav_dictionary">Sözlük</string>
+    <string name="nav_words">Kelimeler</string>
+    <string name="nav_progress">İlerleme</string>
+
+    <!-- Ortak eylemler -->
+    <string name="action_back">Geri</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_clear">Temizle</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_edit">Düzenle</string>
+    <string name="action_save_changes">Değişiklikleri kaydet</string>
+    <string name="action_try_again">Tekrar dene</string>
+    <string name="selected">Seçili</string>
+
+    <!-- Zaman -->
+    <string name="interval_minutes">%1$d dk</string>
+    <string name="interval_hours">%1$d sa</string>
+    <string name="interval_days">%1$d gün</string>
+    <string name="interval_months">%1$d ay</string>
+    <string name="interval_years">%1$d yıl</string>
+    <string name="due_now">Sırası geldi</string>
+    <string name="due_in">%1$s sonra</string>
+    <string name="duration_minutes_seconds">%1$d dk %2$d sn</string>
+    <string name="duration_seconds">%1$d sn</string>
+    <plurals name="days_count">
+        <item quantity="one">%1$d gün</item>
+        <item quantity="other">%1$d gün</item>
+    </plurals>
+    <plurals name="reviews_count">
+        <item quantity="one">%1$d tekrar</item>
+        <item quantity="other">%1$d tekrar</item>
+    </plurals>
+    <plurals name="new_words_count">
+        <item quantity="one">%1$d yeni kelime</item>
+        <item quantity="other">%1$d yeni kelime</item>
+    </plurals>
+
+    <!-- Bugün -->
+    <string name="today_empty_title">Tek bir kelimeyle başla.</string>
+    <string name="today_empty_body">Bugün karşına çıkan bir kelimeye bak. İlk kartın o olacak.</string>
+    <string name="today_done_title">Bugünlük bitti.</string>
+    <string name="today_clear_title">Şu an tekrar edilecek kelime yok.</string>
+    <plurals name="today_waiting">
+        <item quantity="one">Bugün tekrar edilecek %1$d kelime var.</item>
+        <item quantity="other">Bugün tekrar edilecek %1$d kelime var.</item>
+    </plurals>
+    <plurals name="today_left">
+        <item quantity="one">Bugün %1$d kelime kaldı.</item>
+        <item quantity="other">Bugün %1$d kelime kaldı.</item>
+    </plurals>
+    <plurals name="today_reviewed_count">
+        <item quantity="one">Şu ana kadar %1$d tekrar bitti.</item>
+        <item quantity="other">Şu ana kadar %1$d tekrar bitti.</item>
+    </plurals>
+    <plurals name="today_tube_description">
+        <item quantity="one">Bugün %2$d kelimeden %1$d tanesi bitti</item>
+        <item quantity="other">Bugün %2$d kelimeden %1$d tanesi bitti</item>
+    </plurals>
+    <string name="today_saved_as_you_go">Her değerlendirmen anında kaydedilir.</string>
+    <string name="today_next_review">Sonraki tekrar: %1$s</string>
+    <string name="today_start">Tekrara başla</string>
+    <string name="today_continue">Tekrara devam et</string>
+    <string name="today_look_up">Kelime ara</string>
+    <string name="today_plan">Bugünün planı</string>
+    <string name="today_plan_reviews">Sırası gelen tekrarlar</string>
+    <string name="today_plan_steps">Kısa adımlarda olanlar</string>
+    <string name="today_plan_new">Başlanan yeni kelimeler</string>
+    <string name="today_plan_new_value">%2$d kelimeden %1$d</string>
+    <string name="today_streak">Güncel seri</string>
+    <string name="today_recent">Son eklenenler</string>
+
+    <!-- Çalışma -->
+    <string name="study_exit">Oturumdan çık. Değerlendirmelerin kaydedildi.</string>
+    <string name="study_position">%1$d / %2$d</string>
+    <string name="study_new_word">Yeni kelime</string>
+    <string name="study_show_hint">İpucu göster</string>
+    <string name="study_show_answer">Cevabı göster</string>
+    <string name="study_feedback">%1$s: %2$s sonra dönecek</string>
+    <string name="study_rating_description">%1$s, sonraki tekrar %2$s sonra</string>
+    <string name="rating_again">Tekrar</string>
+    <string name="rating_hard">Zor</string>
+    <string name="rating_good">İyi</string>
+    <string name="rating_easy">Kolay</string>
+    <string name="study_empty_title">Şu an tekrar edilecek kelime yok.</string>
+    <string name="study_empty_body">Sözlükten birkaç kelime kaydedersen burada görünür.</string>
+    <string name="study_failed_title">Kartların yüklenemedi.</string>
+    <string name="study_failed_body">Kelimelerin ve ilerlemen kayıtlı. Yeniden yüklemeyi dene.</string>
+    <plurals name="study_complete_title">
+        <item quantity="one">%1$d kelime tekrar ettin.</item>
+        <item quantity="other">%1$d kelime tekrar ettin.</item>
+    </plurals>
+    <string name="study_complete_time">Harcanan süre</string>
+    <string name="study_complete_new">Başlanan yeni kelimeler</string>
+    <string name="study_complete_next">Sonraki tekrar</string>
+    <string name="study_complete_ratings">Değerlendirmelerin</string>
+    <string name="study_complete_ratings_note">Bunlar kendi değerlendirmelerin ve her kelimenin ne zaman döneceğini belirler.</string>
+    <string name="study_back_today">Bugün\'e dön</string>
+
+    <!-- Sözlük -->
+    <string name="dictionary_placeholder">Bir kelime yaz</string>
+    <string name="dictionary_look_up">Ara</string>
+    <string name="dictionary_idle">Çevirisini, telaffuzunu ve tanımlarını görmek için bir kelime yaz (%1$s).</string>
+    <string name="dictionary_swap">Yazdığın dili değiştir</string>
+    <string name="dictionary_change_language">Dili değiştir, şu an %1$s</string>
+    <string name="dictionary_packs_missing">Çeviri bu cihazda çalışır. Önce şu dil paketlerini indir: %1$s.</string>
+    <string name="dictionary_packs_downloading">Dil paketleri iniyor: %1$s. Uygulamayı kullanmaya devam edebilirsin.</string>
+    <string name="dictionary_packs_download">Paketleri indir</string>
+    <string name="dictionary_packs_required_title">Bu arama için dil paketi gerekiyor.</string>
+    <string name="dictionary_packs_required_body">Yukarıdaki paketleri indir ya da öğrendiğin dilde yazmaya geç.</string>
+    <string name="dictionary_translation_label">Çeviri (%1$s). Düzenleyebilirsin.</string>
+    <string name="dictionary_translation_saved">Kayıtlı çevirin (%1$s).</string>
+    <string name="dictionary_translation_placeholder">Anlamını yaz</string>
+    <string name="dictionary_not_found">Sözlükte bu kelime yok. Yine de kendi çevirinle kaydedebilirsin.</string>
+    <string name="dictionary_offline">Çevrimdışısın, bu yüzden tanımlar alınamıyor. Çeviri çalışmaya devam ediyor.</string>
+    <string name="dictionary_service_error">Sözlük yanıt vermedi. Tekrar dene ya da kelimeyi tanımsız kaydet.</string>
+    <string name="dictionary_save">Kelimeyi kaydet</string>
+    <string name="dictionary_in_your_words">Kelimelerinde</string>
+
+    <!-- Kelimeler -->
+    <string name="library_search">Kelimelerinde ara</string>
+    <string name="library_sort">Kelimeleri sırala</string>
+    <string name="filter_all">Tümü</string>
+    <string name="filter_new">Yeni</string>
+    <string name="filter_learning">Öğreniliyor</string>
+    <string name="filter_due">Sırası gelen</string>
+    <string name="filter_mastered">Öğrenildi</string>
+    <string name="sort_recent">Son eklenen</string>
+    <string name="sort_alphabetical">A\'dan Z\'ye</string>
+    <string name="sort_next_review">Sonraki tekrar</string>
+    <string name="sort_hardest">Önce en zorlar</string>
+    <string name="library_empty_title">Henüz kelime yok.</string>
+    <string name="library_empty_body">Sözlükten kaydettiğin kelimeler burada görünür.</string>
+    <string name="library_no_match_title">Eşleşen kelime yok.</string>
+    <string name="library_no_match_body">Başka bir arama ya da filtre dene.</string>
+    <string name="library_row_description">%1$s, %2$s. %3$s. %4$s.</string>
+
+    <!-- Kelime ayrıntıları -->
+    <string name="detail_gone_title">Bu kelime artık kayıtlı değil.</string>
+    <string name="detail_gone_body">Silinmiş olabilir.</string>
+    <string name="detail_learning">Öğrenme</string>
+    <string name="detail_status">Durum</string>
+    <string name="detail_next_review">Sonraki tekrar</string>
+    <string name="detail_next_review_new">İlk tekrarını bekliyor</string>
+    <string name="detail_recall">Şu an hatırlama olasılığın</string>
+    <string name="detail_memory">Hafıza gücü</string>
+    <plurals name="detail_memory_days">
+        <item quantity="one">Yaklaşık %1$d gün</item>
+        <item quantity="other">Yaklaşık %1$d gün</item>
+    </plurals>
+    <string name="detail_difficulty">Zorluk</string>
+    <string name="detail_difficulty_value">10 üzerinden %1$d</string>
+    <string name="detail_reviews">Tekrar sayısı</string>
+    <string name="detail_lapses">Unutma sayısı</string>
+    <string name="detail_last_review">Son tekrar</string>
+    <string name="detail_meanings">Anlamlar</string>
+    <string name="detail_history">Tekrar geçmişi</string>
+    <string name="detail_history_empty">Henüz tekrar yok.</string>
+    <string name="detail_history_entry">%1$s, %2$s</string>
+    <string name="detail_delete_title">“%1$s” silinsin mi?</string>
+    <string name="detail_delete_body">Kelime ve takvimi silinir. Geçmiş tekrarların İlerleme\'de sayılmaya devam eder.</string>
+    <string name="detail_edit_title">Kelimeyi düzenle</string>
+    <string name="detail_edit_term">Kelime (%1$s)</string>
+    <string name="detail_edit_translation">Çeviri (%1$s)</string>
+    <string name="detail_edit_phonetic">Telaffuz (IPA)</string>
+    <string name="detail_edit_hint">İpucu olarak gösterilecek notun</string>
+    <string name="detail_edit_duplicate">Bu dil çiftinde bu kelime zaten var.</string>
+    <string name="word_synonyms">Eş anlamlılar</string>
+    <string name="word_antonyms">Zıt anlamlılar</string>
+    <string name="pronounce_word">%1$s kelimesini dinle</string>
+    <string name="pronounce_unavailable">%1$s için ses alınamadı. Tekrar denemek için dokun.</string>
+
+    <!-- İlerleme -->
+    <string name="progress_empty_title">Henüz tekrar yok.</string>
+    <string name="progress_empty_body">Etkinliğin ve hatırlama oranın ilk çalışmandan sonra burada görünür.</string>
+    <string name="progress_activity">Etkinlik</string>
+    <string name="progress_range_week">7 gün</string>
+    <string name="progress_range_month">30 gün</string>
+    <string name="progress_day_detail">%1$s: %2$s, %3$s</string>
+    <string name="progress_activity_description">Son %3$d günün %2$d gününde %1$s</string>
+    <string name="progress_goal_legend">Koyu çubuklar yeni kelime hedefine ulaştığın günleri gösterir.</string>
+    <string name="progress_recall">Kendi değerlendirmene göre hatırlama</string>
+    <plurals name="progress_recall_body">
+        <item quantity="one">Son 30 günde eski kelimelerdeki %1$d tekrarından \"Tekrar\" demediklerinin oranı.</item>
+        <item quantity="other">Son 30 günde eski kelimelerdeki %1$d tekrarından \"Tekrar\" demediklerinin oranı.</item>
+    </plurals>
+    <plurals name="progress_recall_waiting">
+        <item quantity="one">Eski kelimelerde %1$d tekrardan sonra görünür. Şu an %2$d tekrarın var.</item>
+        <item quantity="other">Eski kelimelerde %1$d tekrardan sonra görünür. Şu an %2$d tekrarın var.</item>
+    </plurals>
+    <string name="progress_consistency">Düzenlilik</string>
+    <string name="progress_consistency_summary">Son %2$d günün %1$d gününde çalıştın</string>
+    <string name="progress_consistency_day">%1$s: %2$s</string>
+    <plurals name="progress_vocabulary">
+        <item quantity="one">%1$d kayıtlı kelime</item>
+        <item quantity="other">%1$d kayıtlı kelime</item>
+    </plurals>
+    <string name="progress_distribution_description">%1$d yeni, %2$d öğreniliyor, %3$d öğrenildi</string>
+    <string name="progress_forecast">Yaklaşan tekrarlar</string>
+    <string name="progress_forecast_description">Önümüzdeki 7 günde %1$s var</string>
+    <string name="progress_totals">Toplamlar</string>
+    <string name="progress_total_reviews">Tüm tekrarlar</string>
+    <string name="progress_best_streak">En iyi seri</string>
+    <string name="progress_goals_met">Yeni kelime hedefine ulaşılan</string>
+    <string name="progress_goals_met_value">Son %2$d günün %1$d günü</string>
+    <string name="progress_history">Son tekrarlar</string>
+    <string name="progress_deleted_word">Silinen kelime</string>
+
+    <!-- Ayarlar -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_languages">Diller</string>
+    <string name="settings_learning">Öğrendiğin dil</string>
+    <string name="settings_known">Çeviri dili</string>
+    <string name="settings_goal">Günlük hedef</string>
+    <string name="settings_goal_label">Günlük yeni kelime</string>
+    <string name="settings_goal_note">Bu yalnızca yeni kelimeleri sınırlar. Sırası gelen kelimeler her zaman tekrarlarında kalır.</string>
+    <string name="settings_goal_decrease">Günlük yeni kelimeyi azalt</string>
+    <string name="settings_goal_increase">Günlük yeni kelimeyi artır</string>
+    <string name="settings_reminder">Hatırlatıcı</string>
+    <string name="settings_reminder_label">Günlük çalışma hatırlatıcısı</string>
+    <string name="settings_reminder_time">Hatırlatma saati</string>
+    <string name="settings_reminder_note">Günde en fazla bir kez, yalnızca bekleyen kelime varsa gönderilir. Pil tasarrufu için biraz gecikebilir.</string>
+    <string name="settings_notifications_off">WordMint için bildirimler kapalı, bu yüzden hatırlatıcı gönderilemiyor.</string>
+    <string name="settings_notifications_open">Bildirim ayarlarını aç</string>
+    <string name="settings_appearance">Görünüm</string>
+    <string name="settings_theme_system">Sistem</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_about">Hakkında</string>
+    <string name="settings_about_body">WordMint, kelimelerini ve tekrarlarını bu cihazda saklar. Tekrarlar, MIT lisanslı py-fsrs referansına dayanan FSRS-6 ile planlanır. Tanımlar freedictionaryapi.com\'dan gelir, çeviri ise Google ML Kit ile cihazında çalışır. Gentium Book Plus ve Instrument Sans, SIL Open Font License kapsamında kullanılır.</string>
+
+    <!-- Dil paketleri -->
+    <string name="pack_on_device">Bu cihazda</string>
+    <string name="pack_needs_download">İndirilmesi gerekiyor</string>
+    <string name="pack_downloading">İniyor</string>
+    <string name="pack_ready">%1$s hazır.</string>
+    <string name="pack_cellular_title">Mobil veri kullanılsın mı?</string>
+    <string name="pack_cellular_body">%1$s paketi yaklaşık 30 MB. Wi-Fi\'a bağlı değilsin.</string>
+    <string name="pack_cellular_confirm">Şimdi indir</string>
+    <string name="pack_cellular_wait">Wi-Fi\'ı bekle</string>
+    <string name="pack_failed_network">%1$s indirilemedi. Bağlantını kontrol edip tekrar dene.</string>
+    <string name="pack_failed_wifi">%1$s Wi-Fi bekliyor. Wi-Fi\'a bağlan ya da mobil veriye izin ver.</string>
+    <string name="pack_failed_storage">Depolama dolu olduğu için %1$s indirilemedi.</string>
+    <string name="pack_failed_busy">İndirme hizmeti meşgul. %1$s için birkaç dakika sonra tekrar dene.</string>
+    <string name="pack_failed_timeout">%1$s çok uzun sürdü. Tekrar dene.</string>
+    <string name="pack_failed_unknown">%1$s indirilemedi. Tekrar dene.</string>
+    <string name="pack_notification_downloading">%1$s indiriliyor</string>
+    <string name="pack_notification_ready">%1$s hazır</string>
+    <string name="pack_notification_failed">%1$s indirilemedi</string>
+    <string name="channel_downloads">Dil paketi indirmeleri</string>
+
+    <!-- Hatırlatıcılar -->
+    <string name="channel_reminders">Çalışma hatırlatıcıları</string>
+    <string name="channel_reminders_description">Tekrar bekleyen kelime olduğunda günlük hatırlatma.</string>
+    <plurals name="reminder_title">
+        <item quantity="one">%1$d kelime seni bekliyor</item>
+        <item quantity="other">%1$d kelime seni bekliyor</item>
+    </plurals>
+    <string name="reminder_body">Şimdi tekrar etmek akılda kalmalarına yardımcı olur.</string>
+
+    <!-- İlk kurulum -->
+    <string name="onboarding_languages_title">Hangi dili öğreniyorsun?</string>
+    <string name="onboarding_languages_body">Kartlar bu dilde bir kelime gösterir ve anlamını hatırlamanı ister.</string>
+    <string name="onboarding_languages_note">Dil paketleri indirilince çeviri çevrimdışı çalışır. Her biri yaklaşık 30 MB. Mobil veri kullanımına sen karar verirsin.</string>
+    <string name="onboarding_goal_title">Günde kaç yeni kelime?</string>
+    <string name="onboarding_goal_body">Her yeni kelime tekrar için geri döner, bu yüzden küçük sayılar bile birikir. On, sürdürülebilir bir başlangıç.</string>
+    <string name="onboarding_reminder_title">Günlük hatırlatıcı ister misin?</string>
+    <string name="onboarding_reminder_body">Kelimeler zamanında tekrar edilince akılda kalır. Hatırlatıcı günde bir kez, yalnızca bekleyen kelime varsa gelir. WordMint onsuz da tam olarak çalışır.</string>
+    <string name="onboarding_reminder_enable">Hatırlatıcıları aç</string>
+    <string name="onboarding_reminder_on">Hatırlatıcılar %1$s için açık.</string>
+    <string name="onboarding_reminder_denied">Hatırlatıcılar kapalı, uygulama aynı şekilde çalışır. Daha sonra Ayarlar\'dan izin verebilirsin.</string>
+    <string name="onboarding_continue">Devam et</string>
+    <string name="onboarding_finish">WordMint\'i kullanmaya başla</string>
+</resources>

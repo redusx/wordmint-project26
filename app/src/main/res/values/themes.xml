@@ -1,30 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base theme for WordStore - AppCompat compatible with NoActionBar -->
-    <style name="Theme.WordStore" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Primary brand color -->
-        <item name="colorPrimary">#6366F1</item>
-        <item name="colorPrimaryDark">#4338CA</item>
-        <item name="colorAccent">#10B981</item>
-        
-        <!-- Status bar -->
-        <item name="android:statusBarColor">#FAFAFC</item>
-        <item name="android:windowLightStatusBar">true</item>
-        
-        <!-- Navigation bar -->
-        <item name="android:navigationBarColor">#FAFAFC</item>
-        <item name="android:windowLightNavigationBar">true</item>
-        
-        <!-- Background -->
-        <item name="android:windowBackground">#FAFAFC</item>
-    </style>
-    
-    <!-- Splash screen theme -->
-    <style name="Theme.WordStore.Splash" parent="Theme.WordStore">
-        <item name="android:windowBackground">#6366F1</item>
-        <item name="android:statusBarColor">#6366F1</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:navigationBarColor">#6366F1</item>
-        <item name="android:windowLightNavigationBar">false</item>
+    <style name="Theme.WordMint" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/canvas</item>
+        <item name="android:colorPrimary">@color/verdigris</item>
+        <item name="android:colorAccent">@color/verdigris</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 </resources>

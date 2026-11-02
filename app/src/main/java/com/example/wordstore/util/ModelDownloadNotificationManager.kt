@@ -6,82 +6,53 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.wordstore.R
+import com.example.wordstore.ui.format.languageName
 
 class ModelDownloadNotificationManager(private val context: Context) {
-    
+
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    
-    companion object {
-        private const val CHANNEL_ID = "model_download_channel"
-        private const val NOTIFICATION_ID = 1001
-    }
-    
+
     init {
-        createNotificationChannel()
-    }
-    
-    private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Model İndirmeleri",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Dil modeli indirme durumu"
-            }
-            notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(
+                NotificationChannel(
+                    CHANNEL_ID,
+                    context.getString(R.string.channel_downloads),
+                    NotificationManager.IMPORTANCE_LOW
+                )
+            )
         }
     }
-    
+
     fun showDownloadStarted(languageCode: String) {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("Dil Modeli İndiriliyor")
-            .setContentText("${languageCode.uppercase()} dil modeli indiriliyor...")
-            .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setProgress(100, 0, true) // Indeterminate progress
-            .setOngoing(true)
-            .build()
-        
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        post(languageCode, R.string.pack_notification_downloading, android.R.drawable.stat_sys_download, ongoing = true)
     }
-    
-    fun updateProgress(languageCode: String, progress: Int) {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("Dil Modeli İndiriliyor")
-            .setContentText("${languageCode.uppercase()}: %$progress")
-            .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setProgress(100, progress, false)
-            .setOngoing(true)
-            .build()
-        
-        notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-    
+
     fun showDownloadComplete(languageCode: String) {
+        post(languageCode, R.string.pack_notification_ready, android.R.drawable.stat_sys_download_done, ongoing = false)
+    }
+
+    fun showDownloadFailed(languageCode: String) {
+        post(languageCode, R.string.pack_notification_failed, android.R.drawable.stat_notify_error, ongoing = false)
+    }
+
+    fun cancel() = notificationManager.cancel(NOTIFICATION_ID)
+
+    private fun post(languageCode: String, textRes: Int, icon: Int, ongoing: Boolean) {
+        val text = context.getString(textRes, languageName(languageCode))
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("İndirme Tamamlandı")
-            .setContentText("${languageCode.uppercase()} dil modeli hazır")
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setProgress(0, 0, false)
-            .setAutoCancel(true)
+            .setContentTitle(text)
+            .setSmallIcon(icon)
+            .setOngoing(ongoing)
+            .setAutoCancel(!ongoing)
+            .apply { if (ongoing) setProgress(0, 0, true) }
             .build()
-        
+        // Without permission this does nothing, which is the intended behavior.
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
-    
-    fun showDownloadError(languageCode: String, error: String) {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("İndirme Başarısız")
-            .setContentText("${languageCode.uppercase()}: $error")
-            .setSmallIcon(android.R.drawable.stat_notify_error)
-            .setProgress(0, 0, false)
-            .setAutoCancel(true)
-            .build()
-        
-        notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-    
-    fun cancelNotification() {
-        notificationManager.cancel(NOTIFICATION_ID)
+
+    private companion object {
+        const val CHANNEL_ID = "model_download_channel"
+        const val NOTIFICATION_ID = 1001
     }
 }
