@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -61,6 +62,7 @@ import com.example.wordstore.ui.components.ScreenTitle
 import com.example.wordstore.ui.components.SearchField
 import com.example.wordstore.ui.components.SecondaryButton
 import com.example.wordstore.ui.components.WordEntryContent
+import com.example.wordstore.ui.components.rememberEchoedText
 import com.example.wordstore.ui.components.rememberPackDownloader
 import com.example.wordstore.ui.format.languageName
 import com.example.wordstore.ui.theme.AppIcons
@@ -237,6 +239,7 @@ private fun SearchHeader(
     modifier: Modifier = Modifier
 ) {
     val colors = WordMintTheme.colors
+    val focus = LocalFocusManager.current
     GlassSurface(hazeState = hazeState, shape = Radii.header, modifier = modifier.fillMaxWidth()) {
         Column(Modifier.statusBarsPadding().padding(horizontal = Spacing.m).padding(bottom = Spacing.m)) {
             ScreenTitle(
@@ -272,7 +275,11 @@ private fun SearchHeader(
                     AnimatedVisibility(state.query.isNotBlank()) {
                         QuietButton(
                             text = stringResource(R.string.dictionary_look_up),
-                            onClick = onSearch,
+                            onClick = {
+                                // Closes the keyboard, which would otherwise cover the result and its save button.
+                                focus.clearFocus()
+                                onSearch()
+                            },
                             enabled = state.canSearch,
                             modifier = Modifier.testTag("look_up")
                         )
@@ -361,6 +368,7 @@ private fun LookupResultContent(
 @Composable
 private fun TranslationField(value: String, targetLang: String, isEditable: Boolean, onChange: (String) -> Unit) {
     val colors = WordMintTheme.colors
+    val text = rememberEchoedText(value)
     val label = stringResource(
         if (isEditable) R.string.dictionary_translation_label else R.string.dictionary_translation_saved,
         languageName(targetLang)
@@ -368,7 +376,7 @@ private fun TranslationField(value: String, targetLang: String, isEditable: Bool
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = colors.inkSecondary)
         Box {
-            if (value.isEmpty()) {
+            if (text.value.isEmpty()) {
                 Text(
                     stringResource(R.string.dictionary_translation_placeholder),
                     style = MaterialTheme.typography.headlineSmall,
@@ -376,8 +384,11 @@ private fun TranslationField(value: String, targetLang: String, isEditable: Bool
                 )
             }
             BasicTextField(
-                value = value,
-                onValueChange = onChange,
+                value = text.value,
+                onValueChange = {
+                    text.onEdit(it)
+                    onChange(it)
+                },
                 readOnly = !isEditable,
                 textStyle = MaterialTheme.typography.headlineSmall.copy(color = colors.primary),
                 cursorBrush = SolidColor(colors.primary),

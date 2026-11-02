@@ -48,6 +48,7 @@ fun SearchField(
 ) {
     val colors = WordMintTheme.colors
     val focus = LocalFocusManager.current
+    val text = rememberEchoedText(value)
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -58,12 +59,15 @@ fun SearchField(
     ) {
         Icon(AppIcons.Search, contentDescription = null, tint = colors.inkMuted, modifier = Modifier.size(Sizes.iconSmall))
         Box(Modifier.weight(1f).padding(horizontal = Spacing.m)) {
-            if (value.isEmpty()) {
+            if (text.value.isEmpty()) {
                 Text(placeholder, style = MaterialTheme.typography.titleMedium, color = colors.inkMuted, maxLines = 1)
             }
             BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
+                value = text.value,
+                onValueChange = {
+                    text.onEdit(it)
+                    onValueChange(it)
+                },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.titleMedium.copy(color = colors.ink),
                 cursorBrush = SolidColor(colors.primary),
@@ -97,7 +101,7 @@ fun SearchField(
                     .testTag("search_field")
             )
         }
-        if (value.isNotEmpty()) {
+        if (text.value.isNotEmpty()) {
             IconAction(AppIcons.Close, stringResource(R.string.action_clear), onClear, tint = colors.inkSecondary)
         }
     }
